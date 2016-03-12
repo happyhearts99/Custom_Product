@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<!--[if IE 8]>
+<html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en" xmlns="http://www.w3.org/1999/html"> <!--<![endif]-->
+
+<!-- Don't enforce the same-origin policy. (Used by people testing their sites.) -->
+<!--  /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --disable-web-security  -->
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Unilever Calendar</title>
+
+<link href="http://m2splaybook.unilever.com/Files/BrokerBranding/UNI/Include/styles.css" type="text/css" rel="Stylesheet" />
+<link rel="stylesheet" href="css/foundation.css">
+
+<script src="js/jquery/jquery-1.10.2.js"></script>
+<script src="js/jqGrid/grid.base.js"></script>
+<script src="js/JSON-js/json_parse.js"></script>
+<!-- script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"></script -->
+<script src="js/angularJS/angular-1.1.5.js"></script>
+<!-- script src="js/angularJS/angular-sanitize.min.js"></script -->
+<!-- script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular-sanitize.min.js"></script -->
+<!-- for HTML insertions -->
+<!-- script src="js/angularJS/angular-sanitize.js"></script -->
+<!-- For Web Services -->
+<script src="js/angularJS/angular-resource.js"></script>
+
+<!-- For Date Formatting -->
+<script src="js/moment.min.js"></script>
+
+<!-- For the Time Line -->
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript" src="js/timeline/timeline.js"></script>
+<link rel="stylesheet" type="text/css" href="js/timeline/timeline.css">
+
+
+<!-- Custom Colors, etc. for Unilever (should go fairly low on the page [after stock CSS]) -->
+<link rel="stylesheet" type="text/css" href="css/unilever.css">
+
+<!-- ////////////////////////////////////////////////////////////////////// -->
+<!-- ////////// The Following Gets Commented Out for Ajax Feeds /////////// -->
+<!-- ////////////////////////////////////////////////////////////////////// -->
+<!-- Load Seed Data -->
+<!-- script src="MasterPlan.json"></script -->
+<!--
+<!-- ////////////////////////////////////////////////////////////////////// -->
+<!-- ////////////////////////////////////////////////////////////////////// -->
+
+
+<script>
+
+    function printCalendar() {
+        var newStartDate = new Date('2014-01-01');
+        var newEndDate = new Date('2015-02-28');
+        timeline.setVisibleChartRange(newStartDate, newEndDate);
+        parent.document.getElementById('step2title').style.display = 'none';
+        parent.document.getElementById('steptwomenu').style.display = 'none';
+        document.getElementById('programTable').style.display = 'none';
+        document.getElementById('btprint').style.visibility = 'hidden';
+        window.print();
+        document.getElementById('programTable').removeAttribute('style');
+        parent.document.getElementById('step2title').removeAttribute('style');
+        parent.document.getElementById('steptwomenu').removeAttribute('style');
+        document.getElementById('btprint').style.visibility = 'visible';
+        return true;
+    }
+// Global variable, to be able to pass an Object to Google's Calendar
+    var theItemThatWeAreWorkingOnInTheCalendar = new Object;
+
+
+    angular.module('jsonService', ['ngResource'])
+            .factory('JsonService', function ($resource) {
+            if (parent.document.getElementById('hidUserID') === undefined) {
+                    return $resource('../GetCalendarData.asmx/GetCalendarDataMasterWithQuotesAround', { }, {
+                        getData: { method: 'GET', isArray: true, params: { "UserID": "", "PlanID": ""} }
+                    });
+                } else {
+                    return $resource('../GetCalendarData.asmx/GetCalendarDataMasterWithQuotesAround', { }, {
+                        getData: { method: 'GET', isArray: true, params: { "UserID": parent.document.getElementById('hidUserID').value, "PlanID": parent.document.getElementById('hidPlanID').value} }
+                    });
+                }
+            });
+// END angular.module
+
+    //?UserID=&PlanID=
+
+//var unileverModule = angular.module('Unilever', ['jsonService']);
+
+
+var unileverModule = angular.module('Unilever', ['jsonService']).directive('ngModelOnblur', function() {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, elm, attr, ngModelCtrl) {
+            if (attr.type === 'radio' || attr.type === 'checkbox') return;
+
+            elm.unbind('input').unbind('keydown').unbind('change');
+            elm.bind('blur', function() {
+                scope.$apply(function() {
+                    ngModelCtrl.$setViewValue(elm.val());
+                });
+            });
+        }
+    };
+});
+
+
+var weHaveNotLoadedTheUsersData = true;
+
+unileverModule.controller('tableCtrl', function ($scope, JsonService) {  //, JsonService
+
+    $scope.myParsedSavedJSONcalendar = [];
+    var dateMungerRegularExpression = new RegExp(/^[0-9\/]+/);
+
+    $scope.mySavedJSONcalendar = JsonService.getData();
+
+    //if (weHaveNotLoadedTheUsersData) {
+
+    $scope.mySavedJSONcalendar.$then(function () {
+
+        angular.forEach($scope.mySavedJSONcalendar, function (individualProgram) {
+            if (weHaveNotLoadedTheUsersData) {
+                //if ( ourProgramIdIsNotInTheTimelineAlready(individualProgram.ProgramID) == true ) {
+                // Add the item to the calendar
+                //console.log("Adding " + individualProgram.ProgramID + " to the timeline");
+                data.addRows([
+                        [new Date(Date.parse(individualProgram.ProgramDefaultStartDate)), new Date(Date.parse(individualProgram.ProgramDefaultEndDAte)), individualProgram.programname, individualProgram.ProgramID, individualProgram.ProgramStatus]
+                    ]);
+                //}
+
+            }
+
+        });
+        timeline.redraw();
+
+        weHaveNotLoadedTheUsersData = false;
+
+        angular.forEach($scope.mySavedJSONcalendar, function (individualProgram) {
+
+            // Fix the "long date" (includes time) format
+            individualProgram.ProgramDefaultEndDAte = individualProgram.ProgramDefaultEndDAte.match(dateMungerRegularExpression).toString();
+            individualProgram.ProgramDefaultStartDate = individualProgram.ProgramDefaultStartDate.match(dateMungerRegularExpression).toString();
+            $scope.myParsedSavedJSONcalendar.push(individualProgram);
+
+        });
+
+    });
+
+    //}
+
+    //
+
+    //}
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ////////////// The Following Gets Commented Out for Ajax Feeds ////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    //    $scope.allProjects = myJSONObject;
+    //    //$scope.allProjects = "";
+    ///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
+
+    // For testing we need to allow "multiple source"
+    // Launch Chrome like -
+    //open /Applications/Google\ Chrome.app --args --disable-web-security
+
+    //url: 'http://businessintel.cierant.com/unilever/GetCalendarData.asmx/GetCalendarDataMaster',
+
+    // $.getJSON
+    // jQuery.getJSON( url [, data ] [, success( data, textStatus, jqXHR ) ] )
+    //url: 'http://127.0.0.1/MasterPlan.json',
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///// The Following Makes a Request for All the Programs (as a JSON feed) /////
+    /////////////////////////////// http://json.org ///////////////////////////////
+    // "A value can be a string in double quotes, or a number, or true or false.../
+    ///////////////////////////////////////////////////////////////////////////////
+    $.ajax({
+        type: 'Get',
+        url: '../GetCalendarData.asmx/GetCalendarDataMasterWithQuotesAround',
+        async: false,
+        data: { "UserID": "", "PlanID": "" },
+        //url: 'http://127.0.0.1/MasterPlan.json',
+        //contentType: "application/json; charset=utf-8",  // <- This gets us an OPTIONS header, and a redirect
+        dataType: "json",
+        complete: function (data) {
+            //console.log("complete function received:  " +  data.responseText);
+            $scope.allProjects = jQuery.parseJSON(data.responseText);
+        },
+        success: function (successfulResponseData) {
+            //console.log("success function received:  " +  successfulResponseData);
+        },
+        error: function (errorData) {
+            if (errorData != "undefined") {
+                console.log("error function received:  " + errorData.responseText);
+            }
+            //$scope.allProjects = errorData.responseText;
+        }
+    });
+    ///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
+
+    var theNumberOfPrograms = $scope.allProjects.length;
+
+    $scope.mySelectedProjects = new Array;
+    $scope.myListOfSelectedProjects = new Array;
+
+    // Pack the items into their associated arrays
+
+    //Data Holders
+    $scope.sources = [];
+    $scope.platforms = [];
+    $scope.myListOfPlatforms = [];
+    $scope.brands = [];
+    $scope.myListOfBrands = [];
+    $scope.programs = [];
+    $scope.myListOfPrograms = [];
+
+    $scope.sourcesWeWantToSee = [];
+    $scope.platformsWeWantToSee = [];
+    $scope.brandsWeWantToSee = [];
+    $scope.programsWeWantToSee = [];
+
+    $scope.platformToHighlight = "";
+    $scope.brandToHighlight = "";
+    $scope.programToHighlight = "";
+
+    var itemCounter = 0;
+    // Loop, and get each item's critical (for the table build, anyway) data AND set them all to be invisible
+    $.each($scope.allProjects, function () {
+
+        $scope.allProjects[itemCounter].visibility = "invisible";
+
+        if (jQuery.inArray($scope.allProjects[itemCounter].sourceName, $scope.sources) == -1) {
+            $scope.sources.push($scope.allProjects[itemCounter].sourceName);
+        }
+        if ($.inArray($scope.allProjects[itemCounter].PlatformID, $scope.myListOfPlatforms) == -1) {
+            $scope.myListOfPlatforms.push($scope.allProjects[itemCounter].PlatformID);
+
+            var ourPlatformID = $scope.allProjects[itemCounter].PlatformID;
+            var ourPlatformName = $scope.allProjects[itemCounter].PlatformName;
+            var myTestObject = {};
+            myTestObject[ourPlatformID] = ourPlatformName;
+            //$scope.platforms.push(myTestObject);
+            $scope.platforms[ourPlatformID] = ourPlatformName;
+
+        }
+        if ($.inArray($scope.allProjects[itemCounter].CalendarBrandID, $scope.myListOfBrands) == -1) {
+            $scope.myListOfBrands.push($scope.allProjects[itemCounter].CalendarBrandID);
+
+            var ourBrandID = $scope.allProjects[itemCounter].CalendarBrandID;
+            var ourBrandName = $scope.allProjects[itemCounter].BrandName;
+            var myTestObject = {};
+            myTestObject[ourBrandID] = ourBrandName;
+            //$scope.brands.push(myTestObject);
+            $scope.brands[ourBrandID] = ourBrandName;
+
+            //$scope.brands.push($scope.allProjects[itemCounter].BrandName);
+            //$scope.brands[$scope.allProjects[itemCounter].CalendarBrandID] = $scope.allProjects[itemCounter].BrandName;
+        }
+        if ($.inArray($scope.allProjects[itemCounter].ProgramID, $scope.myListOfPrograms) == -1) {
+            $scope.myListOfPrograms.push($scope.allProjects[itemCounter].ProgramID);
+
+            var ourProgramID = $scope.allProjects[itemCounter].ProgramID;
+            var ourProgramName = $scope.allProjects[itemCounter].programname;
+            var myTestObject = {};
+            myTestObject[ourProgramID] = ourProgramName;
+            //$scope.programs.push(myTestObject);
+            $scope.programs[ourProgramID] = ourProgramName;
+
+            // $scope.programs.push($scope.allProjects[itemCounter].programname);
+            //$scope.programs[$scope.allProjects[itemCounter].ProgramID] = $scope.allProjects[itemCounter].programname;
+        }
+        itemCounter++;
+
+    });
+    // END building item arrays for the tables
+
+    $scope.theNumberOfSources = $scope.sources.length;
+    $scope.theNumberOfPlatforms = $scope.platforms;
+    $scope.theNumberOfBrands = $scope.brands;
+    $scope.theNumberOfPrograms = $scope.programs;
+
+    $scope.updateTimelineFor = function (programID, startDate, endDate) {
+        if (startDate.indexOf("/") == -1) {
+            alert("Please enter the correct start date");
+            return false;
+        }
+        else if (endDate.indexOf("/") == -1) {
+            alert("Please enter the correct end date");
+            return false;
+        }
+        else {
+            var sepsdate = startDate.split('/');
+            var sepedate = endDate.split('/');
+            if (sepsdate.length < 3) {
+                alert("Please enter the correct start date");
+                return false;
+            }
+            else if (sepedate.length < 3) {
+                alert("Please enter the correct end date");
+                return false;
+            }
+            else {
+                var sm = sepsdate[0];
+                var sd = sepsdate[1];
+                var sy = sepsdate[2];
+                var em = sepedate[0];
+                var ed = sepedate[1];
+                var ey = sepedate[2];
+                if (sd == "" || sm == "" || sy == "" || (isNaN(sd) || sd != parseInt(sd)) && sd != '' || Number(sd) <= 0 || Number(sd) > 31 || (isNaN(sm) || sm != parseInt(sm)) && sm != '' || Number(sm) <= 0 || Number(sm) >= 13 || sy.length != 4 || Number(sy) <= 0 || (isNaN(sy) || sy != parseInt(sy)) && sy != '') {
+                    alert("Please enter the correct start date");
+                    return false;
+                }
+                else if (ed == "" || em == "" || ey == "" || (isNaN(ed) || ed != parseInt(ed)) && ed != '' || Number(ed) <= 0 || Number(ed) > 31 || (isNaN(em) || em != parseInt(em)) && em != '' || Number(em) <= 0 || Number(em) >= 13 || ey.length != 4 || Number(ey) <= 0 || (isNaN(ey) || ey != parseInt(ey)) && ey != '') {
+                    alert("Please enter the correct end date");
+                    return false;
+                }
+            }
+        }
+        //Format given date as "yyyy-mm-dd hh:ii:ss"
+        //var formattedStart =  moment(StartDate.toString()).format("M/D/YYYY HH:MM:SS A");
+        myProgram = programID;
+        //myStartDate = moment(startDate.toString()).format("YYYY-MM-DD HH:MM:SS");
+        //myStartDate = startDate;
+        myStartDate = new Date(Date.parse(startDate));
+        //myEndDate = moment(endDate.toString()).format("YYYY-MM-DD HH:MM:SS");
+        //myEndDate = endDate;
+        myEndDate = new Date(Date.parse(endDate));
+        //        console.log("Received an event: " + myProgram);
+        //        var programName = data.getValue(row, 2);
+        //        var programID = data.getValue(row, 3);
+        //        var StartDate = data.getValue(row, 0);
+        //        var EndDate = data.getValue(row, 1);
+
+        // Find our item in the timeline data
+        var elementLength = $scope.myParsedSavedJSONcalendar.length;
+        for (var a = 0; a < elementLength; a++) {
+            if ($scope.myParsedSavedJSONcalendar[a].ProgramID == myProgram) {
+                var formattedStart = moment(startDate.toString()).format("M/D/YYYY HH:MM:SS A");
+                var formattedEnd = moment(endDate.toString()).format("M/D/YYYY HH:MM:SS A");
+                data.setValue(a, 0, myStartDate);
+                data.setValue(a, 1, myEndDate);
+                if (parent.GetSelectedPrograms != undefined) {
+                    parent.GetSelectedPrograms(programID, formattedStart, formattedEnd, 'CHANGE');
+                } else {
+                    console.log("This page is not in a context to Save");
+                }
+                break;
+            }
+        }
+        var options = {
+            width: "100%",
+            //height: "300px",
+            height: "auto",
+            editable: true,   // enable dragging and editing items
+            snapEvents: false, // don't force dates to be on exact dates (months)
+            //axisOnTop: true,
+            style: "box",
+            start: new Date(Date.parse("1/1/2014 00:00:00")),     //.parse("1/1/2014"),   //"2014, 0, 0"
+            end: new Date(Date.parse("2/31/2015 00:00:00"))     //"2015, 1, 0"
+        };
+
+        timeline.draw(data, options);
+        var outerCounter = 0;
+        angular.forEach(data.J, function (each) {
+            angular.forEach(each, function (inner) {
+                //console.log("Comparing our " + myProgram + " to " + inner[3].v);
+                // If we find our item...
+                // Tell Google to Change it
+                if (inner[3].v == myProgram) {
+                    //console.log("Changing program" + myProgram);
+                    //$scope.myCalendarEntry.ProgramDefaultStartDate;
+                    inner[0].v = myStartDate;
+                    inner[1].v = myEndDate;
+
+                    timeline.redraw();
+
+                    //Tell Shruti to change it, too
+                    var formattedStart = moment(startDate.toString()).format("M/D/YYYY HH:MM:SS A");
+                    var formattedEnd = moment(endDate.toString()).format("M/D/YYYY HH:MM:SS A");
+
+                    if (parent.GetSelectedPrograms != undefined) {
+                        parent.GetSelectedPrograms(programID, formattedStart, formattedEnd, 'CHANGE');
+                    } else {
+                        console.log("This page is not in a context to Save \"" + inner[2].v + "\"");
+                    }
+
+
+                }
+                outerCounter++;
+            })// END looking at each object's field #3 (forEach)
+        })// END looking at each data object on the timeline (forEach)
+    }
+
+    function ourProgramIdIsNotInTheTimelineAlready(programID) {
+        var ourProgramID = programID;
+        var outerCounter = 0;
+        if (data.J.length > 0) {
+            angular.forEach(data.J, function (each) {
+                angular.forEach(each, function (inner) {
+                    //console.log("Comparing our " + programID + " to " + inner[3].v);
+                    // If we find our item...
+                    // Tell Google to Delete it
+                    if (inner[3].v == ourProgramID) {
+                        //console.log("Returning \"false\" because the comparison is true");
+                        //return false;
+                        //FIXME test
+                        return true;
+                    }
+
+                    outerCounter++;
+                })// END looking at each object's field #3 (forEach)
+                if (outerCounter == data.J.length) {
+                    //console.log("Returning \"true\" because we went through all the items");
+                    return true;
+                }
+
+            })// END looking at each data object on the timeline (forEach)
+        } else if (data.J.length <= 0) {
+            //console.log("Defaulting to \"true\" the first time through");
+            return true;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////- Style/Class FILTER -//////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    //////////                                                           //////////
+    // Change the Class (and therefore the CSS Style of selected elements)
+    var weNeedToContinueLookingForOurItem = true;
+    var ourItemToInvestigate;
+    $scope.programClassChangingFilter = function (section, element) {
+
+        var test = element;
+        if (($.inArray(element, $scope.sourcesWeWantToSee) >= 0) && section == "source") {
+            return true;
+        }
+
+        if (element == $scope.platformToHighlight && section == "platform") {
+            return true;
+        }
+
+        if (element == $scope.brandToHighlight && section == "brand") {
+            return true;
+        }
+
+        if (element == $scope.programToHighlight && section == "program") {
+            return true;
+        }
+
+    };
+    // END of programClassChangingFilter Class/CSS changer
+
+
+    //////////                                                           //////////
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////- FILTERS -///////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    //////////                                                           //////////
+
+    $scope.platformLineHidingFilter = function (element) {
+        // RETURN TRUE TO HIDE THE ITEM (ng-hide directive)
+        var hideThisPlatform = true;
+
+        var test = $scope.platforms[element];
+        if (element && ($.inArray(element.toString(), $scope.platformsWeWantToSee) >= 0)) {
+            //console.log("Showing " + element + " in the platformLineHidingFilter")
+            // Do we want to _hide_ this item?
+            hideThisPlatform = false;
+            return hideThisPlatform;
+        } else if (element) {
+            // Do we want to _hide_ this item?
+            //console.log("Hiding: " + element + " in the platformLineHidingFilter")
+            hideThisPlatform = true;
+        }
+
+        return hideThisPlatform;
+    };
+    // END of platformHighlightFilter Class/CSS changer
+
+    $scope.brandLineHidingFilter = function (element) {
+        // RETURN TRUE TO HIDE THE ITEM (ng-hide directive)
+        var hideThisPlatform = true;
+
+        if (element && ($.inArray(element.toString(), $scope.brandsWeWantToSee) >= 0)) {
+            //console.log("Showing " + element + " in the brandLineHidingFilter")
+            // Do we want to _hide_ this item?
+            hideThisPlatform = false;
+            return hideThisPlatform;
+        } else if (element) {
+            // Do we want to _hide_ this item?
+            //console.log("Hiding: " + element + " in the brandLineHidingFilter")
+            hideThisPlatform = true;
+        }
+
+        return hideThisPlatform;
+    };
+    // END of brandHighlightFilter Class/CSS changer
+
+    $scope.programLineHidingFilter = function (element) {
+        // RETURN TRUE TO HIDE THE ITEM (ng-hide directive)
+        var hideThisPlatform = true;
+
+        //var test = $scope.programs.indexOf(element.ProgramID);
+        //var test = element.ProgramID in $scope.programsWeWantToSee;
+        var test = $.inArray(element.ProgramID, $scope.programsWeWantToSee)
+
+        //if (element && ($.inArray(($scope.programs.indexOf(element.ProgramID)), $scope.programsWeWantToSee) >= 0)) {
+        if (element && ($.inArray(element.ProgramID, $scope.programsWeWantToSee) >= 0)) {
+            //console.log("Showing " + element + " in the brandLineHidingFilter")
+            // Do we want to _hide_ this item?
+            hideThisPlatform = false;
+            return hideThisPlatform;
+        } else if (element) {
+            // Do we want to _hide_ this item?
+            //console.log("Hiding: " + element + " in the brandLineHidingFilter")
+            hideThisPlatform = true;
+        }
+
+        return hideThisPlatform;
+
+    };
+    // END of programClassChangingFilter Class/CSS changer
+
+    //////////                                                           //////////
+    ///////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////- FILTERS -///////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+
+
+    //Utility function to see if we've clicked on a Program (represented by its ProgramID number)
+    function isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    }
+
+
+    // Loop through all the Programs looking for every item that has Solo (or Scale) as a sourceName
+    var itemsToHighlightForSolo = [];
+    var itemsToHighlightForScale = [];
+    var itemsToHighlightForAll = [];
+    angular.forEach($scope.allProjects, function (thisProject) {
+        if (thisProject.sourceName == "Solo") {
+            if (jQuery.inArray(thisProject.programname, itemsToHighlightForSolo) == -1) {
+                itemsToHighlightForSolo.push(thisProject.programname);
+            }
+        }
+        if (thisProject.sourceName == "Scale") {
+            if (jQuery.inArray(thisProject.programname, itemsToHighlightForScale) == -1) {
+                itemsToHighlightForScale.push(thisProject.programname);
+            }
+        }
+        if (thisProject.sourceName == "All") {
+            if (jQuery.inArray(thisProject.programname, itemsToHighlightForAll) == -1) {
+                itemsToHighlightForAll.push(thisProject.programname);
+            }
+        }
+    });
+
+    //Solo should highlight automatically, but...
+    itemsToHighlightForSolo.push("Solo");
+    //Scale should highlight automatically, but...
+    itemsToHighlightForScale.push("Scale");
+    itemsToHighlightForAll.push("All");
+
+    // Click Handler for clicks on the Programs
+    $scope.handleProgramClick = function (theClicked, sourceText, itemID) {
+
+        var identifierSentWithTheClick = sourceText;
+        var objectWhichWasClicked = theClicked;
+
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////// Begin Deleting New Item /////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        // Flip the color and the state
+        var aprogramid = new Array();
+        var aprogramname = new Array();
+        for (var a = 0; a < $scope.myParsedSavedJSONcalendar.length; a++) {
+            aprogramid[a] = $scope.myParsedSavedJSONcalendar[a].ProgramID;
+            aprogramname[a] = $scope.myParsedSavedJSONcalendar[a].programname;
+        }
+        //if (jQuery.inArray($.trim(theClicked.target.innerHTML), $scope.myListOfSelectedProjects) >= 0) {
+        if (jQuery.inArray(sourceText, aprogramid) >= 0) {
+            // look up the item that was just clicked
+            var doneLookingForClickedItemToTakeOff = false;
+            ///////////////////////////////////////////////////////////////////////////////
+            ///////////////////// Begin Deleting New Program Item /////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////
+            angular.forEach($scope.allProjects, function (individualProgram) {
+                if (!doneLookingForClickedItemToTakeOff) {
+                    // If we've come across the item   & it's a number (Program ID)...
+                    if (individualProgram.ProgramID === identifierSentWithTheClick && (isNumber(identifierSentWithTheClick))) {
+
+                        $scope.programToHighlight = "";
+
+                        if (typeof individualProgram !== 'undefined') {
+                            individualProgram.status = "";
+                        }
+
+                        // Stop Tracking the object as selected
+                        for (i = 0; i < $scope.mySelectedProjects.length; i++) {
+                            if ($scope.mySelectedProjects[i].programname == individualProgram.programname) {
+                                if ($scope.myParsedSavedJSONcalendar[i].ProgramStatus != 'Reserved') {
+                                    $scope.mySelectedProjects.splice(i, 1);
+                                    $scope.myListOfSelectedProjects.splice(i, 1);
+                                }
+                            }
+                        }
+
+                        var programcount = $scope.myParsedSavedJSONcalendar.length;
+                        for (var p = 0; p < programcount; p++) {
+                            if (individualProgram.ProgramID == $scope.myParsedSavedJSONcalendar[p].ProgramID) {
+                                if ($scope.myParsedSavedJSONcalendar[p].ProgramStatus != 'Reserved')
+                                    data.removeRow(p);
+                            }
+                        }
+                        // Remove the item from the calendar
+                        // links.Timeline.prototype.deleteItem = function(index, preventRender)
+                        //data.J["1"].c["2"].v = the name of the Program
+                        var dataOuterLoopCounter = 0;
+                        angular.forEach(data.J, function (each) {
+                            var dataInnerLoopCounter = 0;
+                            angular.forEach(each, function (inner) {
+                                // If we find our item...
+                                // Tell Google to Delete it
+                                if (inner[2].v == individualProgram.programname) {
+                                    //links.Timeline.prototype.deleteItem(dataInnerLoopCounter, false);
+                                    // delete the row in the original data table
+                                    if (google && google.visualization &&
+                                            data instanceof google.visualization.DataTable) {
+                                        data.removeRow(dataOuterLoopCounter);
+                                    }
+                                    // The following "else" never triggers (KRH 20130922)
+                                    else if (links.Timeline.isArray(data)) {
+                                        data.splice(dataOuterLoopCounter, 1);
+                                    }
+                                    else {
+                                        throw "Cannot delete row from data, unknown data type";
+                                    }
+                                }
+                                dataInnerLoopCounter++;
+                            });
+                            // If we find our item...
+                            // Tell Google to Delete it
+                            //if(each.J[1].c[2] == individualProgram.programname) {
+                            //    links.Timeline.prototype.deleteItem(dataLoopCounter, false);
+                            //}
+                            dataOuterLoopCounter++;
+                        });
+
+                        //data.addRows([
+                        //    [new Date(Date.parse(individualProgram.ProgramDefaultStartDate)), new Date(Date.parse(individualProgram.ProgramDefaultEndDAte)), individualProgram.programname ]]);
+
+                        // specify options for the calendar
+                        var options = {
+                            width: "100%",
+                            //height: "300px",
+                            height: "auto",
+                            editable: true,   // enable dragging and editing items
+                            snapEvents: false, // don't force dates to be on exact dates (months)
+                            //axisOnTop: true,
+                            style: "box",
+                            start: new Date(Date.parse("1/1/2014 00:00:00")),     //.parse("1/1/2014"),   //"2014, 0, 0"
+                            end: new Date(Date.parse("2/31/2015 00:00:00"))     //"2015, 1, 0"
+                        };
+
+                        timeline.draw(data, options);
+                        //where data is a DataTable, and options is a name-value map in the JSON format.
+
+                        // This is where Shruti's onClick should get fired for DELETING (I believe)
+                        if (parent.GetSelectedPrograms != undefined) {
+                            parent.GetSelectedPrograms(individualProgram.ProgramID, '', '', 'DELETE');
+                        } else {
+                            console.log("This page is not in a context to Delete " + individualProgram.programname);
+                        }
+
+
+                        // Update the data in myParsedSavedJSONcalendar
+                        for (i = 0; i < $scope.myParsedSavedJSONcalendar.length; i++) {
+                            if (individualProgram.ProgramID == $scope.myParsedSavedJSONcalendar[i].ProgramID) {
+                                //console.log("Deleting ID: " + individualProgram.ProgramID);
+                                if ($scope.myParsedSavedJSONcalendar[i].ProgramStatus != 'Reserved')
+                                    $scope.myParsedSavedJSONcalendar.splice(i, 1);
+                            }
+                        }
+                        //END for loop to find ProgramID
+
+
+                        doneLookingForClickedItemToTakeOff = true;
+                        ///////////////////////////////////////////////////////////////////////////////
+                        /////////////////// Begin Deleting New NON Program Item ///////////////////////
+                        ///////////////////////////////////////////////////////////////////////////////
+                    } else {
+                        // We're not a Program
+                        //DESELECT ALL CHILDREN OF THE CLICKED ITEM
+                        //$scope.myTarget = "Taking off: " + objectWhichWasClicked.target.innerHTML;
+                        //console.log("Taking off: " + objectWhichWasClicked.target.innerHTML);
+                        // NOT UNTIL THERE'S AN "IF"!
+                        //doneLookingForClickedItemToTakeOff = true;
+                    }
+                }
+                // END of loop break-out construct
+
+            })
+            // End of looping through each item looking for a clicked Program to take them OFF of the calendar
+
+
+            // END Take them OFF the Calendar
+        } else {
+            ///////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////
+            ////////////////////// Begin Adding New Program Item //////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////
+
+            /////////// Transitioning to AngularJS ng-class 20130924
+            ///////////theClicked.target.style.backgroundColor = theBackgroundHighlightColor;
+            //var theNumberOfItemsThatHaveBeenSelectedForPlatform = 0;
+            // Put them ON the calendar
+            // look up the item that was just clicked
+            var doneLookingForClickedItem = false
+            angular.forEach($scope.allProjects, function (individualProgram) {
+                if (!doneLookingForClickedItem) {
+                    // If we've come across the item   && (isNumber(identifierSentWithTheClick))
+                    // Then we know we have a Direct Program click
+                    if (individualProgram.ProgramID === identifierSentWithTheClick && (isNumber(identifierSentWithTheClick))) {
+                        //if ((individualProgram.CalendarBrandID == itemID.toString()) && (identifierSentWithTheClick == "brand")) {
+
+                        $scope.programToHighlight = identifierSentWithTheClick;
+
+                        //console.log("Located " + individualProgram.programname);
+                        // Set a "selected" property in the allProjects JSON array
+                        if (typeof individualProgram !== 'undefined') {
+                            individualProgram.status = "selected";
+                        }
+
+                        //data.J["1"].c["2"].v = the name of the Program
+
+                        // Check to make sure... we can't select the same item twice
+                        //if ((jQuery.inArray(individualProgram.programname, $scope.myListOfSelectedProjects)) == -1) {
+                        // The Program doesn't seem to be in the list of Programs
+
+
+                        // Start Tracking the object as "Selected"
+                        $scope.mySelectedProjects.push(individualProgram);
+
+                        $scope.myListOfSelectedProjects.push(individualProgram.programname);
+
+                        // Add the item to the calendar
+                        data.addRows([
+                                [new Date(Date.parse(individualProgram.ProgramDefaultStartDate)), new Date(Date.parse(individualProgram.ProgramDefaultEndDAte)), individualProgram.programname, individualProgram.ProgramID, individualProgram.ProgramStatus]
+                        ]);
+
+                        // specify options for the calendar
+                        var options = {
+                            width: "100%",
+                            //height: "300px",
+                            height: "auto",
+                            editable: true,   // enable dragging and editing items
+                            snapEvents: false, // don't force dates to be on exact dates (months)
+                            //axisOnTop: true,
+                            style: "box",
+                            start: new Date(Date.parse("1/1/2014 00:00:00")),     //.parse("1/1/2014"),   //"2014, 0, 0"
+                            end: new Date(Date.parse("2/31/2015 00:00:00"))     //"2015, 1, 0"
+                        };
+
+                        timeline.draw(data, options);
+                        //where data is a DataTable, and options is a name-value map in the JSON format.
+
+                        // This is where Shruti's onClick should get fired for ADDING (I believe)
+                        // var sDate = new Date(Date.parse(individualProgram.ProgramDefaultStartDate));
+                        // var eDate = new Date(Date.parse(individualProgram.ProgramDefaultEndDAte))
+
+                        var sDate = individualProgram.ProgramDefaultStartDate;
+                        var eDate = individualProgram.ProgramDefaultEndDAte;
+                        if (parent.GetSelectedPrograms != undefined) {
+                            theItemThatWeAreWorkingOnInTheCalendar = individualProgram;
+                            parent.GetSelectedPrograms(individualProgram.ProgramID, sDate, eDate, 'SAVE');
+                        } else {
+                            console.log("This page is not in a context to Save " + individualProgram.programname);
+                        }
+
+                        //Add the item to the table (at the bottom of the page)
+                        // Update the data in myParsedSavedJSONcalendar
+
+                        var myIndex = ($scope.myParsedSavedJSONcalendar.length);
+                        $scope.myParsedSavedJSONcalendar[myIndex] = new Array();
+                        $scope.myParsedSavedJSONcalendar[myIndex].ProgramID = individualProgram.ProgramID;
+                        $scope.myParsedSavedJSONcalendar[myIndex].programname = individualProgram.programname;
+                        $scope.myParsedSavedJSONcalendar[myIndex].ProgramStatus = individualProgram.ProgramStatus;
+                        $scope.myParsedSavedJSONcalendar[myIndex].ProgramDefaultStartDate = moment(individualProgram.ProgramDefaultStartDate.toString()).format("M/D/YYYY");
+                        $scope.myParsedSavedJSONcalendar[myIndex].ProgramDefaultEndDAte = moment(individualProgram.ProgramDefaultEndDAte.toString()).format("M/D/YYYY");
+                        //console.log("Line 708 : " + $scope.myParsedSavedJSONcalendar[i].ProgramDefaultStartDate + "\nEnd: " + $scope.myParsedSavedJSONcalendar[i].ProgramDefaultEndDAte);
+
+
+                        /*} else {
+                        // END of looking for redundant Programs already on the calendar
+
+                        window.alert(individualProgram.programname + " is already on the calendar.");
+
+
+                        }*/
+                        //$scope.myTarget = "Putting on: " + identifierSentWithTheClick;
+                        //console.log("Putting " + individualProgram.programname + " on the map");
+                        // We're done; no more looping!
+                        doneLookingForClickedItem = true;
+                    } else {
+                        ///////////////////////////////////////////////////////////////////////////////
+                        //////////////////// Begin Adding New NON Program Item ////////////////////////
+                        ///////////////////////////////////////////////////////////////////////////////
+                        // We're not a Program
+                        //SELECT ALL CHILDREN (and parents) OF THE CLICKED ITEM NOT ANY MORE... JUST THE NEXT SECTION WILL GET HIGHLIGHTED
+
+                        // If identifierSentWithTheClick is "source" we have to find all the children with the same sourceName
+                        if (identifierSentWithTheClick == "source") {
+
+                            // Firefox workaround:
+                            // instead of if (objectWhichWasClicked.target.innerHTML == "Scale")
+                            // -----------------------------------------------------------------
+                            // var target = event.target || event.srcElement;
+                            //            if (target.innerHTML == "Solo")
+                            //
+                            // var $target = $(objectWhichWasClicked.target);
+
+                            //                            function getinnerHTML(o)
+                            //                            {
+                            //                                return o.textContent ? o.textContent : o.innerHTML;
+                            //                            }
+
+
+                            if ($.trim(objectWhichWasClicked.target.innerHTML) == "Solo") {
+                                //if (target.textContent == String.fromCharCode(13) + "Solo" + String.fromCharCode(13)) {
+                                var textThatWeClickedOn = $.trim(objectWhichWasClicked.target.innerHTML);
+                                //RESET THE VISUALIZATION
+                                $scope.sourcesWeWantToSee = ["Solo"];
+                                $scope.platformsWeWantToSee = [];
+                                $scope.brandsWeWantToSee = [];
+                                $scope.programsWeWantToSee = [];
+                                // loop through all the Programs, and get the Brand Names for the next column
+                                for (i = 0; i < $scope.allProjects.length; i++) {
+                                    if ($scope.allProjects[i].sourceName == textThatWeClickedOn) {
+                                        // Locate the Item that we clicked on, and then its Platform
+                                        var theTESTSourceNameThatWereAfter = $scope.allProjects[i].sourceName;
+
+                                        if ((jQuery.inArray($scope.allProjects[i].PlatformID, $scope.platformsWeWantToSee)) == -1) {
+                                            $scope.platformsWeWantToSee.push($scope.allProjects[i].PlatformID);
+                                        }
+                                    }
+                                    //}
+                                    // END if we're not in the myListOfItemsToHighlightForPlatform
+                                }
+                                // EMD looking through all Programs
+                                // END IF Platform
+                                doneLookingForClickedItem = true;
+
+                            } else if ($.trim(objectWhichWasClicked.target.innerHTML) == "Scale") {
+                                var textThatWeClickedOn = $.trim(objectWhichWasClicked.target.innerHTML);
+                                //RESET THE VISUALIZATION
+                                $scope.sourcesWeWantToSee = ["Scale"];
+                                $scope.platformsWeWantToSee = [];
+                                $scope.brandsWeWantToSee = [];
+                                $scope.programsWeWantToSee = [];
+                                // loop through all the Programs, and get the Brand Names for the next column
+                                for (i = 0; i < $scope.allProjects.length; i++) {
+                                    if ($scope.allProjects[i].sourceName == textThatWeClickedOn) {
+                                        // Locate the Item that we clicked on, and then its Platform
+                                        //var theTESTSourceNameThatWereAfter = $scope.allProjects[i].sourceName;
+
+                                        if ((jQuery.inArray($scope.allProjects[i].PlatformID, $scope.platformsWeWantToSee)) == -1) {
+                                            //console.log(i + ":  Adding: " + $scope.allProjects[i].PlatformName + " as " + $scope.allProjects[i].PlatformID);
+                                            $scope.platformsWeWantToSee.push($scope.allProjects[i].PlatformID);
+                                        }
+                                    }
+                                    //}
+                                    // END if we're not in the myListOfItemsToHighlightForPlatform
+                                }
+                                // EMD looking through all Programs
+                            }
+                            // END IF Platform
+                            else if ($.trim(objectWhichWasClicked.target.innerHTML) == "All") {
+                                var textThatWeClickedOn = $.trim(objectWhichWasClicked.target.innerHTML);
+                                $scope.sourcesWeWantToSee = ["All"];
+                                $scope.platformsWeWantToSee = [];
+                                $scope.brandsWeWantToSee = [];
+                                $scope.programsWeWantToSee = [];
+                                // loop through all the Programs, and get the Brand Names for the next column
+                                for (i = 0; i < $scope.allProjects.length; i++) {
+                                    if ($scope.allProjects[i].sourceName == textThatWeClickedOn) {
+                                        // Locate the Item that we clicked on, and then its Platform
+                                        var theTESTSourceNameThatWereAfter = $scope.allProjects[i].sourceName;
+
+                                        if ((jQuery.inArray($scope.allProjects[i].PlatformID, $scope.platformsWeWantToSee)) == -1) {
+                                            $scope.platformsWeWantToSee.push($scope.allProjects[i].PlatformID);
+                                        }
+                                    }
+                                    //}
+                                    // END if we're not in the myListOfItemsToHighlightForPlatform
+                                }
+                                // EMD looking through all Programs
+                                // END IF Platform
+                                doneLookingForClickedItem = true;
+
+                            }
+                            doneLookingForClickedItem = true;
+
+                        }
+                        // END we clicked on a "Source" item
+                        ///////////////////////////////////////////////////////////////////////////////
+                        /////////////////// End "We Clicked on Scale or Solo" /////////////////////////
+                        ///////////////////////////////////////////////////////////////////////////////
+                        ////////////////// Begin "We Clicked on a Sub-Category ////////////////////////
+                        ///////////////////////////////////////////////////////////////////////////////
+
+                        // If  identifierSentWithTheClick is "platform" we have to find all the children with the same PlatformName
+                        if (identifierSentWithTheClick == "platform") {
+                            //var textThatWeClickedOn = $.trim(objectWhichWasClicked.target.innerHTML);
+                            //RESET THE VISUALIZATION
+                            $scope.brandsWeWantToSee = [];
+                            $scope.programsWeWantToSee = [];
+
+                            $scope.platformToHighlight = itemID;
+
+                            // loop through all the Programs, and get the Brand Names for the next column
+                            for (i = 0; i < $scope.allProjects.length; i++) {
+                                if ($scope.allProjects[i].PlatformID == itemID) {
+                                    // Locate the Item that we clicked on, and then its Brands
+                                    //var thePlatformNameThatWereAfter = $scope.allProjects[i].PlatformID;
+
+                                    if ((jQuery.inArray($scope.allProjects[i].CalendarBrandID, $scope.brandsWeWantToSee)) == -1) {
+                                        $scope.brandsWeWantToSee.push($scope.allProjects[i].CalendarBrandID);
+                                    }
+                                }
+                                //}
+                                // END if we're not in the myListOfItemsToHighlightForPlatform
+                            }
+                            // EMD looking through all Programs
+                            doneLookingForClickedItem = true;
+                        }
+                        // END IF Platform
+
+
+                        // If  identifierSentWithTheClick is "brand" we have to find all the children with the same  BrandName
+                        if (identifierSentWithTheClick == "brand") {
+                            //var textThatWeClickedOn = $.trim(objectWhichWasClicked.target.innerHTML);
+                            //RESET THE VISUALIZATION
+                            $scope.programsWeWantToSee = [];
+
+                            $scope.brandToHighlight = itemID;
+
+                            // loop through all the Programs, and get the Brand Names for the next column
+                            for (i = 0; i < $scope.allProjects.length; i++) {
+                                //if ($scope.allProjects[i].BrandName == textThatWeClickedOn) {
+                                var test = i;
+                                if ($scope.allProjects[i].CalendarBrandID == itemID.toString()) {
+                                    // Locate the Item that we clicked on, and then its Programs
+                                    var thePlatformNameThatWereAfter = $scope.allProjects[i].programname;
+
+                                    if ((jQuery.inArray($scope.allProjects[i].ProgramID, $scope.programsWeWantToSee)) == -1) {
+                                        $scope.programsWeWantToSee.push($scope.allProjects[i].ProgramID);
+                                    }
+                                }
+                                //}
+                                // END if we're not in the myListOfItemsToHighlightForPlatform
+                            }
+                            // EMD looking through all Programs
+                        }
+                        // END IF Brand
+                    }
+                    // END ELSE we are not a Program, but another item on the chart
+                    //    )
+                    // End of looping through each item looking for a clicked Program to put ON the calendar
+
+
+                }
+                // END Loop Control for items to highlight
+            })
+            // END angular.forEach for adding NEW items
+
+        }
+        // END Else we're adding (not deleting)
+        var individualProgram;
+
+
+        var myProgramCellToTarget = $("table").find("#programCell");
+        var allThePrograms = [];
+        $scope.programCellContent;
+        angular.forEach($scope.allProjects, function (individualProgram) {
+
+            //$("table").find("#programCell").appendTo(individualProgram.programname);
+            var myProgramIdentifier = individualProgram.ProgramID;
+
+            //$scope.programCellContent = $scope.programCellContent + "<br>" + individualProgram.programname;
+            if ($scope.programCellContent !== undefined) {
+                //$scope.programCellContent = $scope.programCellContent + "\r\n" + '<a class="btn" ng-click="handleProgramClick(\'' + myProgramIdentifier + '\')">' + individualProgram.programname + '</a><BR>';
+                //$scope.programCellContent = $scope.programCellContent + "\r\n" + '<a class="btn" ng-click="handleProgramClick($event)">' + individualProgram.programname + '</a><BR>';
+            } else {
+                //$scope.programCellContent = '<a class="btn" ng-click="handleProgramClick(\'' + myProgramIdentifier + '\')">' + individualProgram.programname + '</a><BR>';
+                //$scope.programCellContent = '<a class="btn" ng-click="handleProgramClick($event)">' + individualProgram.programname + '</a><BR>';
+            }
+        }
+        );
+
+        //$scope.programCellContent = allThePrograms;
+    }
+
+
+    for (i = 0; i < $scope.allProjects.length; i++) {
+        if ($scope.allProjects[i].sourceName == 'All') {
+            $scope.sourcesWeWantToSee = ["All"];
+            var theTESTSourceNameThatWereAfter = $scope.allProjects[i].sourceName;
+            if ((jQuery.inArray($scope.allProjects[i].PlatformID, $scope.platformsWeWantToSee)) == -1) {
+                $scope.platformsWeWantToSee.push($scope.allProjects[i].PlatformID);
+            }
+        }
+        //}
+        // END if we're not in the myListOfItemsToHighlightForPlatform
+    }
+    // END handleProgramClick function
+});
+// END CONTROLLER scope function
+
+
+</script>
+
+
+<!-- For the Time Line -->
+<script type="text/javascript">
+    google.load("visualization", "1");
+
+    // Set callback to run when API is loaded
+    google.setOnLoadCallback(drawVisualization);
+
+    var timeline;
+    var data;
+
+    function getSelectedRow() {
+        var row = undefined;
+        var sel = timeline.getSelection();
+        if (sel.length) {
+            if (sel[0].row != undefined) {
+                row = sel[0].row;
+            }
+        }
+        return row;
+    }
+
+
+    // Called when the Visualization API is loaded.
+    function drawVisualization() {
+        // Create and populate a data table.
+        data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'start');
+        data.addColumn('datetime', 'end');
+        data.addColumn('string', 'content');
+        // Added 20131002 for Unilever Identification
+        data.addColumn('string', 'programID');
+        data.addColumn('string', 'programStatus');
+        // specify options for the calendar
+        var options = {
+            width: "100%",
+            //height: "300px",
+            height: "auto",
+            editable: true,   // enable dragging and editing items
+            //axisOnTop: true,
+            style: "box",
+            start: new Date(Date.parse("1/1/2014 00:00:00")),     //.parse("1/1/2014"),   //"2014, 0, 0"
+            end: new Date(Date.parse("2/31/2015 00:00:00"))     //"2015, 1, 0"
+        };
+
+        // Instantiate our timeline object.
+        timeline = new links.Timeline(document.getElementById('mytimeline'));
+
+        // Add event listeners
+        google.visualization.events.addListener(timeline, 'select', onselect);
+        google.visualization.events.addListener(timeline, 'change', onchange);
+        google.visualization.events.addListener(timeline, 'add', onadd);
+        google.visualization.events.addListener(timeline, 'edit', onedit);
+        google.visualization.events.addListener(timeline, 'delete', ondelete);
+        google.visualization.events.addListener(timeline, 'rangechange', onrangechange);
+        google.visualization.events.addListener(timeline, 'rangechanged', onrangechanged);
+
+        // Draw our timeline with the created data and options
+        timeline.draw(data, options);
+        onrangechange();
+    }
+
+    // Make a callback function for the select item
+    var onselect = function (event) {
+        var row = getSelectedRow();
+
+        if (row != undefined) {
+            document.getElementById("info").innerHTML += "item " + row + " selected<br>";
+            // Note: you can retrieve the contents of the selected row with
+            //       data.getValue(row, 2);
+        }
+        else {
+            document.getElementById("info").innerHTML += "no item selected<br>";
+        }
+    };
+
+    // callback function for the change item
+    var onchange = function () {
+        var row = getSelectedRow();
+        document.getElementById("info").innerHTML += "item " + row + " changed<br>";
+
+        var programName = data.getValue(row, 2);
+        var programID = data.getValue(row, 3);
+        var StartDate = data.getValue(row, 0);
+        var EndDate = data.getValue(row, 1);
+
+        var formattedStart =  moment(StartDate.toString()).format("M/D/YYYY HH:MM:SS A");
+        var formattedEnd = moment(EndDate.toString()).format("M/D/YYYY HH:MM:SS A");
+
+        if (parent.GetSelectedPrograms != undefined) {
+        parent.GetSelectedPrograms(programID, formattedStart, formattedEnd, 'CHANGE');
+        } else {
+            console.log("This page is not in a context to Save \"" + programName + "\"");
+        }
+
+    var scope = angular.element($("#outerScope")).scope();
+
+    var applyFunction = function () {
+    // Update the data in myParsedSavedJSONcalendar
+
+    for (i = 0; i < scope.myParsedSavedJSONcalendar.length; i++) {
+        if (scope.myParsedSavedJSONcalendar[i].ProgramID === programID) {
+            scope.myParsedSavedJSONcalendar[i].ProgramDefaultStartDate = moment(StartDate.toString()).format("M/D/YYYY");
+            scope.myParsedSavedJSONcalendar[i].ProgramDefaultEndDAte = moment(EndDate.toString()).format("M/D/YYYY");
+            //console.log("Start: " + scope.myParsedSavedJSONcalendar[i].ProgramDefaultStartDate + "\nEnd: " + scope.myParsedSavedJSONcalendar[i].ProgramDefaultEndDAte);
+        }
+    }
+};
+// END Apply Function
+
+    //Make sure our information gets distributed to AngularJS
+    if (scope.$$phase) { // most of the time it is "$digest"
+        applyFunction();
+    } else {
+        scope.$apply(applyFunction);
+    }
+
+
+    };
+// END On Change Timeline Item
+
+    // callback function for the delete item
+    var ondelete = function () {
+        var row = getSelectedRow();
+        document.getElementById("info").innerHTML += "item " + row + " deleted<br>";
+        // This is where Shruti's onClick should get fired for DELETING (I believe)
+        // First we have to reverse-out the timeline's item data, to get the ProgramID
+        var programID = data.getValue(row, 3);
+        var programName = data.getValue(row, 2);
+        var programStatus = data.getValue(row, 4);
+        if (parent.GetSelectedPrograms != undefined) {
+            parent.GetSelectedPrograms(programID, '', '', 'DELETE');
+            if (programStatus == 'Reserved') {
+                data.addRows([
+                                [new Date(Date.parse(data.getValue(row, 0))), new Date(Date.parse(data.getValue(row, 1))), programName, programID, programStatus]
+                        ]);
+
+                // specify options for the calendar
+                var options = {
+                    width: "100%",
+                    //height: "300px",
+                    height: "auto",
+                    editable: true,   // enable dragging and editing items
+                    snapEvents: false, // don't force dates to be on exact dates (months)
+                    //axisOnTop: true,
+                    style: "box",
+                    start: new Date(Date.parse("1/1/2014 00:00:00")),     //.parse("1/1/2014"),   //"2014, 0, 0"
+                    end: new Date(Date.parse("2/31/2015 00:00:00"))     //"2015, 1, 0"
+                };
+
+                timeline.draw(data, options);
+            }
+        } else {
+            console.log("This page is not in a context to Delete \"" + programName + "\"");
+        }
+
+        var scope = angular.element($("#outerScope")).scope();
+
+        var anotherApplyFunction = function () {
+            // Update the data in myParsedSavedJSONcalendar
+            for (i = 0; i < scope.myParsedSavedJSONcalendar.length; i++) {
+                if (programID == scope.myParsedSavedJSONcalendar[i].ProgramID) {
+                    if (programStatus != 'Reserved')
+                        scope.myParsedSavedJSONcalendar.splice(i, 1);
+                }
+            }
+            //END for loop to find ProgramID
+        }
+        // END anotherApplyFunction
+
+        //Make sure our information gets distributed to AngularJS
+        if (scope.$$phase) { // most of the time it is "$digest"
+            anotherApplyFunction();
+        } else {
+            scope.$apply(anotherApplyFunction);
+        }
+
+
+    };
+
+    // callback function for the edit item
+    var onedit = function () {
+        // NO Editing Text!!
+        // var row = getSelectedRow();
+        // document.getElementById("info").innerHTML += "item " + row + " edit<br>";
+        // var content = data.getValue(row, 2);
+        // var newContent = prompt("Enter content", content);
+        // if (newContent != undefined) {
+        //    data.setValue(row, 2, newContent);
+        // }
+        // timeline.redraw();
+    };
+
+    // callback function for the add item
+    var onadd = function () {
+        var row = getSelectedRow();
+        document.getElementById("info").innerHTML += "item " + row + " created<br>";
+        var content = data.getValue(row, 2);
+        var newContent = prompt("Enter content", content);
+        if (newContent != undefined) {
+            data.setValue(row, 2, newContent);
+            timeline.redraw();
+        }
+        else {
+            // cancel adding the item
+            timeline.cancelAdd();
+        }
+    };
+
+    function onrangechange() {
+        // adjust the values of startDate and endDate
+        var range = timeline.getVisibleChartRange();
+        document.getElementById('startDate').value = dateFormat(range.start);
+        document.getElementById('endDate').value = dateFormat(range.end);
+    }
+
+    function onrangechanged() {
+        // Commented out the "info" field (at the bottom)
+        //document.getElementById("info").innerHTML += "range changed<br>";
+    }
+
+    // adjust start and end time.
+    function setTime() {
+        if (!timeline) return;
+
+        var newStartDate = new Date(document.getElementById('startDate').value);
+        var newEndDate = new Date(document.getElementById('endDate').value);
+        timeline.setVisibleChartRange(newStartDate, newEndDate);
+    }
+
+    // set the visible range to the current time
+    function setCurrentTime() {
+        if (!timeline) return;
+
+        timeline.setVisibleChartRangeNow();
+        onrangechange();
+    }
+
+    // Format given date as "yyyy-mm-dd hh:ii:ss"
+    // @param datetime   A Date object.
+    function dateFormat(date) {
+        var datetime = date.getFullYear() + "-" +
+                ((date.getMonth() < 9) ? "0" : "") + (date.getMonth() + 1) + "-" +
+                ((date.getDate() < 10) ? "0" : "") + date.getDate() + " " +
+                ((date.getHours() < 10) ? "0" : "") + date.getHours() + ":" +
+                ((date.getMinutes() < 10) ? "0" : "") + date.getMinutes() + ":" +
+                ((date.getSeconds() < 10) ? "0" : "") + date.getSeconds();
+        return datetime;
+    }
+</script>
+<!-- END for the Time Line -->
+
+
+</head>
+<body ng-app="Unilever">
+
+<div ng-controller="tableCtrl" id="outerScope">
+    <!--  | filter:{status:status.name} -->
+
+    <table id="programTable" border="1" height="200" width="90%" align="center">
+
+        <colgroup>
+            <col span="1" style="width: 10%;">
+            <col span="1" style="width: 20%;">
+            <col span="1" style="width: 20%;">
+            <col span="1" style="width: 50%;">
+        </colgroup>
+        <TR>
+            <TD>Source</TD>
+            <TD>Platform</TD>
+            <TD>Brand</TD>
+            <TD>Program</TD>
+        </TR>
+        <tr>
+            <td valign=top id="sourceCell">
+                <div style="height: 200px; overflow: auto">
+                    <!-- ng-class="{true:'selectedItem', false:'', partial: 'partiallySelected'}[programClassChangingFilter(mySource)]" -->
+                    <!-- ng-class="{true:'', false:'', partial: 'partiallySelected'}[programClassChangingFilter(mySource)]" -->
+                    <div class="myProject" ng-repeat="mySource in sources"
+                         ng-model="currentStatus"
+                         ng-class="{true:'partiallySelected', false:'', partial: 'partiallySelected'}[programClassChangingFilter('source', mySource)]"
+                         ng-click="handleProgramClick($event, 'source', 0)">
+                        {{mySource}}
+                    </div>
+                </div>
+            </td>
+            <td valign=top id="platformCell">
+                <div style="height: 200px; overflow: auto">
+                    <!-- ng-class="{true:'selectedItem', false:'', partial: 'partiallySelected'}[programClassChangingFilter(myPlatform)]" -->
+                    <!-- ng-repeat="myPlatform in platforms | filter:currentStatus track by $id($index)" -->
+                    <!-- track by $id($index) -->
+                    <div class="myProject" ng-repeat="(id, myPlatform) in platforms track by id"
+                         ng-model="currentStatus"
+                         ng-hide="platformLineHidingFilter(id)"
+                         ng-class="{true:'partiallySelected', false:'', partial: 'partiallySelected'}[programClassChangingFilter('platform', id)]"
+                         ng-click="handleProgramClick($event, 'platform', id)">
+                        {{myPlatform}}
+                    </div>
+                </div>
+            </td>
+            <td valign=top id="brandCell">
+                <div style="height: 200px; overflow: auto"><!--  | filter:programClassChangingFilter -->
+                    <!-- ng-class="{true:'selectedItem', false:'', partial: 'partiallySelected'}[programClassChangingFilter(myBrand)]" -->
+                    <div class="myProject" ng-repeat="(id, myBrand) in brands track by id"
+                         ng-model="currentStatus"
+                         ng-hide="brandLineHidingFilter(id)"
+                         ng-class="{true:'partiallySelected', false:'', partial: 'partiallySelected'}[programClassChangingFilter('brand', id)]"
+                         ng-click="handleProgramClick($event, 'brand', id)">
+                        {{myBrand}}
+                    </div>
+                </div>
+            </td>
+            <td valign=top id="programCell">
+                <div style="height: 200px; overflow: auto">
+                    <!-- ng-class="{true:'selectedItem', false:'', partial: 'partiallySelected'}[programClassChangingFilter(myProject)]" -->
+                    <div class="myProject" ng-repeat="myProject in allProjects"
+                         ng-class="{true:'partiallySelected', false:'', partial: 'partiallySelected'}[programClassChangingFilter('program',myProject.ProgramID)]"
+                         ng-model="currentStatus"
+                         ng-hide="programLineHidingFilter(myProject)"
+                         ng-click="handleProgramClick($event, myProject.ProgramID, 0)">
+                        {{myProject.programname}}
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+<input type="button" onclick="printCalendar()" id="btprint" value="Print Calendar" class="btprint"/><br/><br/><br/>
+
+<!-- WAS End of AngularJS Table Controller <div> -->
+<!-- http://businessintel.cierant.com/unilever/GetCalendarData.asmx?op=GetCalendarDataMaster&UserId=&PlanId= -->
+<!-- Analyze the content of js/returnedBy_plan_save.aspx20130916.json as myJasonString -->
+
+
+<!-- For the Time Line -->
+<!-- Get Rid of Some Instructions & Start/End Controlls
+<ul>
+    <li>Click and drag on the time axis to move the timeline, scroll to zoom the timeline</li>
+    <li>Click and drag an item to change its date, double-click to change its text</li>
+    <li>Click or drag on an empty spot in the timeline to create a new item</li>
+</ul>
+
+<p>
+    Starttime: <input type="text" id="startDate" value="">
+    Endtime: <input type="text" id="endDate" value="">
+    <input type="button" id="setRange" value="Set" onclick="setTime();">
+    <input type="button" id="setCurrentTime" value="Current time" onclick="setCurrentTime();">
+</p>
+The Calendar _NEEDS_ these Start & End Dates-->
+
+<input type="hidden" id="setRange" value="Set">
+<input type="hidden" id="setCurrentTime" value="Current time">
+
+<input type="hidden" id="startDate" value="">
+<input type="hidden" id="endDate" value="">
+
+<div id="mytimeline"></div>
+
+<!-- Information about where the used icons come from -->
+<p style="color:gray; font-size:10px; font-style:italic;">
+    Icons by <a href="http://dryicons.com" target="_blank" title="Aesthetica 2 Icons by DryIcons" style="color:gray;">DryIcons</a>
+    and <a href="http://www.tpdkdesign.net" target="_blank" title="Refresh Cl Icons by TpdkDesign.net"
+           style="color:gray;">TpdkDesign.net</a>
+</p>
+
+<br>
+
+<table border="2">
+    <tr class="myCalendarListClass" ng-repeat="myCalendarEntry in myParsedSavedJSONcalendar | orderBy:ProgramDefaultStartDate:date" ng-model="calendarListData">
+        <!-- myCalendarEntry (ProgramDefaultStartDate, ProgramDefaultEndDAte, programname, ProgramID, notes) -->
+        <td align="left">
+        <B>{{myCalendarEntry.programname}}</B>
+            <HR><!--  $scope.myCalendarEntry.ProgramDefaultStartDate;  -->
+            <!-- input name="startDateInput" ng-model='myCalendarEntry.ProgramDefaultStartDate' ng-model-onblur ng-change='updateTimelineFor ("{{myCalendarEntry.ProgramID}}", myCalendarEntry.ProgramDefaultStartDate, "{{myCalendarEntry.ProgramDefaultEndDAte}}")' {{myCalendarEntry.ProgramDefaultStartDate}}> - <input ng-model='myCalendarEntry.ProgramDefaultEndDAte' {{myCalendarEntry.ProgramDefaultEndDAte}} -->
+            <input name="startDateInput" ng-model='myCalendarEntry.ProgramDefaultStartDate' ng-model-onblur ng-change='updateTimelineFor ("{{myCalendarEntry.ProgramID}}", myCalendarEntry.ProgramDefaultStartDate, "{{myCalendarEntry.ProgramDefaultEndDAte}}")' {{myCalendarEntry.ProgramDefaultStartDate}}> - <input name="endDateInput" ng-model='myCalendarEntry.ProgramDefaultEndDAte' ng-model-onblur ng-change='updateTimelineFor ("{{myCalendarEntry.ProgramID}}", "{{myCalendarEntry.ProgramDefaultStartDate}}", myCalendarEntry.ProgramDefaultEndDAte)' {{myCalendarEntry.ProgramDefaultEndDAte}}>
+        </td>
+    </tr>
+</table>
+</div>
+<!-- End of AngularJS Table Controller <div> -->
+<div id="info"></div>
+
+<!-- End for the Time Line -->
+
+
+</body>
+</html>
