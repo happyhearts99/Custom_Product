@@ -1,0 +1,1284 @@
+<!doctype html>
+<html>
+	<head>
+        <link rel="shortcut icon" href="http://www.m2splaybook.com/CatMan/playbook.jpg">
+		<title>Cat Man Playbook</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<link rel="stylesheet" type="text/css" href="css/netx.min.css?v=0.11.0.f1dcd02">
+		<link rel="stylesheet" type="text/css" href="css/style.css?v=0.11.0.f1dcd02">
+        <style type="text/css">
+            .monthdisp tr {
+                display: block;
+            }
+            .thismon a {
+                color: #515151;
+                padding: .2em;
+                border: 1px solid #d3d3d3;
+                background: #e6e6e6 url(img/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x;
+                display: block;
+                text-align: right;
+                cursor: pointer;
+            }
+            table.calendarpicker tr {
+                display: table-row;
+            }
+            table.calendarpicker tbody {
+                display: block;
+            }
+            table#calendarpicker2 {
+                left: 445px;
+            }
+            table.calendarpicker {
+                background-color: white;
+                position: absolute;
+                left: 148px;
+                border-collapse: separate;
+            }
+            table.calendarpicker td {
+                color: #000000;
+                font-family: Arial,sans-serif;
+                font-size: 0.9em;
+                padding: 1px;
+                border: 0;
+            }
+            table.calendarpicker .monthdisp td {
+                padding-bottom: 0px;
+            }
+            select.selectoption {
+                height: 155px;
+                width:270px;
+            }
+            #report option {
+                height: 25px;
+                padding-left: 5px;
+                padding-top:3px;
+            }
+            .thisday a {
+                color: #212121;
+                border: 1px solid #aaaaaa;
+                background: #ffffff url(img/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;
+                cursor: pointer;
+                padding: .2em;
+                display: block;
+                text-align: right;
+            }
+            .calendarpicker {
+                display: none;
+                width: 182px;
+                margin-top: 0px;
+                margin-left: 0px;
+                padding-bottom: 2px;
+                border: 1px solid #aaaaaa;
+                border-radius: 5px;
+            }
+            #page_navigation {
+                margin-bottom: 25px;
+                margin-left: 10px;
+                margin-top: 10px;
+            }
+            #page_navigation a {
+                padding: 3px;
+                border: 1px solid rgb(17, 105, 111);
+                margin: 2px 3px;
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            #page_navigation a:hover {
+                color: rgb(56, 56, 56);
+            }
+            .active_page {
+                background: #02acbb;
+                color: white !important;
+            }
+            div.limit {
+                height: 520px;
+                /*height: 650px;
+                height: 1100px;*/
+                /*height: auto;*/
+            }
+            h3 {
+                color: #0eb3af;
+                font-family: inherit;
+                font-weight: 500;
+                line-height: 1.1;
+                display: block;
+                font-size: 30px;
+            }
+            .calendarpicker .monthdisp .left {
+                background: #cccccc url(img/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;
+                position: relative;
+                left: 5px;
+                border-top: 1px solid #525252;
+                border-top-left-radius: 5px;
+                border-bottom: 1px solid #525252;
+                border-bottom-left-radius: 5px;
+                border-spacing: 5px;
+                border-left: 1px solid #525252;
+                top: 2px;
+            }
+            .calendarpicker .monthdisp .middle {
+                background: #cccccc url(img/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;
+                border-top: 1px #525252 solid;
+                border-bottom: 1px #525252 solid;
+                position: relative;
+                top: 2px;
+            }
+            .calendarpicker .monthdisp .right {
+                background: #cccccc url(img/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x;
+                border-top: 1px solid #525252;
+                border-top-right-radius: 5px;
+                border-bottom: 1px solid #525252;
+                border-bottom-right-radius: 5px;
+                border-right: 1px solid #525252;
+                position: relative;
+                right: 2px;
+                top: 2px;
+            }
+            .navigate {
+                text-align: center;
+                cursor: pointer;
+            }
+            .weekdays {
+                font: normal bold 20px/18px Arial,sans-serif;
+                color: #555555;
+            }
+            .calendarpicker table.cal {
+                margin-left: 2px;
+            }
+            .calendarpicker .cal .weekdays .week {
+                padding: .1em .3em 0.1em .3em;
+                font-family: Verdana,Arial,sans-serif;
+                font-weight: bold;
+                font-size: 9pt;
+            }
+            .calendarpicker .monthdisp .scope {
+                font-size: 9pt;
+            }
+            .monthdisp {
+                color: #555555;
+                font: normal bold 14px/22px Arial,sans-serif;
+                -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#f2f2f2, endColorstr=#efefef)";
+                border: 0px solid #d7d7d7;
+            }
+            .selecttable select {
+                margin-right: 20px;
+            }
+            .tbreport td:nth-child(2) {
+                max-width: 210px;
+                overflow-wrap: break-word;
+                -ms-word-wrap: break-word;
+                white-space: normal;
+                -ms-word-break: break-all;
+                word-break: break-all;
+                -webkit-hyphens: auto;
+                -moz-hyphens: auto;
+                hyphens: auto;
+            }
+            .tbreport td:nth-child(6) {
+                max-width: 220px;
+                overflow-wrap: break-word;
+                -ms-word-wrap: break-word;
+                white-space: normal;
+                -ms-word-break: break-all;
+                word-break: break-all;
+                -webkit-hyphens: auto;
+                -moz-hyphens: auto;
+                hyphens: auto;
+            }
+            .tbreport #trheader th.lblogin {
+                min-width: 80px;
+            }
+            .tbreport #trheader th.lbaction {
+                min-width: 70px;
+            }
+            .tbreport #trheader th.lbcategory {
+                min-width: 130px;
+            }
+            .tbreport #trheader th.lbtype {
+                min-width: 145px;
+            }
+            .tbreport tr:hover {
+                background-color: rgb(250, 252, 226);
+            }
+            .tbreport tr td:first-child, .tbreport tr th:first-child {
+                border-left: 1px solid #525252;
+            }
+            .tbreport tr {
+                height:35px;
+            }
+            .tbreport th.datetab {
+                min-width: 75px;
+            }
+            .tbreport td.firsttr {
+                border-top: none;
+            }
+            .tbreport td {
+                padding: 3.5px 5px 3px 3px;
+                border-left: solid 1px #D8D7D7;
+                border-top: 1px solid #D8D7D7;
+                text-align: right;
+                color: #5F5F5F;
+            }
+            .tbreport th {
+                padding: 3px 2px 3px 2px;
+                border-left: 1px solid #525252;
+                text-align: center;
+                background-color: #19a3ac;
+                color: white;
+            }
+            a:hover {
+                color: white;
+            }
+            .exportbutton {
+                background: #02acbb;
+                border-radius: 5px;
+                border: 1px #23a3b2 solid;
+                box-shadow: inset 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+                color: #fff;
+                display: inline-block;
+                font-size: 14px;
+                height: 28px;
+                line-height: 15px;
+                padding: 6px 17px;
+                cursor:pointer;
+            }
+            .activity {
+                background: url(img/processing.gif) no-repeat center;
+            }
+            .abutton {
+                background: #02acbb;
+                border-radius: 5px;
+                border: 1px #23a3b2 solid;
+                box-shadow: inset 0px 0px 5px 0px rgba(255, 255, 255, 0.75);
+                color: #fff;
+                display: inline-block;
+                font-size: 14px;
+                height: 28px;
+                line-height: 15px;
+                padding: 6px 17px;
+                cursor: pointer;
+            }
+            .abutton:active {
+                border-color: ButtonShadow ButtonHighlight ButtonHighlight ButtonShadow;
+            }
+            @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+                select.selectoption {
+                    height: 30px;
+                }
+            }
+            @media only screen and (max-device-width: 480px) {
+                select.selectoption {
+                    height: 30px;
+                }
+            }
+        </style>
+		<!--[if IE 9]>
+		<script type="text/javascript" src="js/base64-min.js"></script>
+		<script type="text/javascript">
+			// IE 9 does not have native base64 converter
+			if (typeof btoa === "undefined") {
+				_keyStr = Base64._keyStr;
+				btoa = Base64.encode;
+				atob = Base64.decode;
+			}
+		</script>
+		<![endif]-->
+        <script type="text/javascript" src="js/jquery-latest.min.js"></script>
+		<script type="text/javascript" src="js/cierant_head.load.min.js?v=0.11.0.f1dcd02"></script>
+
+		<script type="text/javascript">
+		    var preurl = document.referrer;
+		    var tempurl = "";
+		    var session = "";
+		    var lowerpreurl = preurl.toLowerCase();
+		    if (preurl.indexOf("?s=") != -1) {
+		        tempurl = preurl.split('?s=');
+		        if (tempurl[1] != "")
+		            document.cookie = "sessionKey=" + tempurl[1] + "; path=/; expires=";
+		    }
+			head.load(
+            "cierant_config.js?v=0.11.0.f1dcd02",
+			"js/netx-min.js?v=0.11.0.f1dcd02",
+			"js/controller.js?v=0.11.0.f1dcd02"
+			);
+			var currentuser = 0;
+			var tId = setInterval(function () { if (Netx && Netx.user.profile && Netx.user.profile.attributes.name1 && Netx.user.profile.attributes.name1 != undefined) onComplete() }, 3000);
+			function onComplete() {
+			    clearInterval(tId);
+			    currentuser = Netx.user.profile.id;
+			}
+            </script>
+
+        <script type="text/javascript" src="js/moment.js"></script>
+        <script type="text/javascript">
+            $(document).on('click touchstart', function (event) {
+                if (event === undefined) event = window.event;
+                var target = 'target' in event ? event.target : event.srcElement;
+                if (target.className != 'scope' && target.className.indexOf('scope') == -1) {
+                    if ($('#calendarpicker').css('display') == 'block')
+                        $('#calendarpicker').hide();
+                    if ($('#calendarpicker2').css('display') == 'block')
+                        $('#calendarpicker2').hide();
+                }
+            });
+
+            var pastdate = new Date();
+            pastdate.setMonth(pastdate.getMonth() - 4);
+            var monthe = pastdate.getMonth();
+            var yeare = pastdate.getFullYear();
+            var day = pastdate.getDate();
+            var pastmonth = monthe + 1;
+            if (day < 10) day = '0' + day;
+            if (pastmonth < 10) pastmonth = '0' + pastmonth;
+            var pastmonthdate = pastmonth + "/" + day + "/" + yeare;
+            var getDatee = new Date();
+            /*var monthe = getDatee.getMonth();
+            var yeare = getDatee.getFullYear();
+            var day = getDatee.getDate();*/
+            var cmonth = getDatee.getMonth();
+            var currentmonth = getDatee.getMonth()+1;
+            var cyear = getDatee.getFullYear();
+            var cday = getDatee.getDate();
+            if (cday < 10) cday = '0' + cday;
+            if (currentmonth < 10) currentmonth = '0' + currentmonth;
+            var today = currentmonth + "/" + cday + "/" + cyear;
+            var monthe2 = getDatee.getMonth();
+            var yeare2 = getDatee.getFullYear();
+            var day2 = getDatee.getDate();
+            function isEmpty(val) {
+                return (val === undefined || val == null || val.length <= 0) ? true : false;
+            }
+            function prev() {
+                monthe = monthe - 1;
+                if (monthe < 0) {
+                    yeare = yeare - 1;
+                    monthe = 11;
+                }
+                dispCal(monthe, yeare);
+                return false;
+            }
+            function next() {
+                monthe = monthe + 1;
+                if (monthe > 11) {
+                    yeare = yeare + 1;
+                    monthe = 0;
+                }
+                dispCal(monthe, yeare);
+                return false;
+            }
+            function next2() {
+                monthe2 = monthe2 + 1;
+                if (monthe2 > 11) {
+                    yeare2 = yeare2 + 1;
+                    monthe2 = 0;
+                }
+                dispCal2(monthe2, yeare2);
+                return false;
+            }
+            function prev2() {
+                monthe2 = monthe2 - 1;
+                if (monthe2 < 0) {
+                    yeare2 = yeare2 - 1;
+                    monthe2 = 11;
+                }
+                dispCal2(monthe2, yeare2);
+                return false;
+            }
+            function daysInMonth(monthe, yeare) {
+                return 32 - new Date(yeare, monthe, 32).getDate();
+            }
+            function getElementPosition(arrName, arrItem) {
+                for (var pos = 0; pos < arrName.length; pos++) {
+                    if (arrName[pos] == arrItem) 
+                        return pos;
+                }
+            }
+            function setVal(getDat) {
+                $('#startdate').val(getDat);
+                $('#calendarpicker').hide();
+            }
+            function setVal2(getDat) {
+                $('#enddate').val(getDat);
+                $('#calendarpicker2').hide();
+            }
+            function dispCal(mon, yea) {
+                if ($('#calendarpicker2').css('display') == 'block')
+                    $('#calendarpicker2').hide();
+                var ar = new Array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+                var chkEmpty = isEmpty(mon);
+                var n, days, calendar, startDate, newYea, setvale, i;
+                if (chkEmpty != true) {
+                    mon = mon + 1;
+                    n = ar[mon - 1];
+                    n += " " + yea;
+                    newYea = yea;
+                    days = daysInMonth((mon - 1), yea);
+                    startDate = new Date(ar[mon - 1] + " 1" + "," + parseInt(yea));
+                } else {
+                    mon = getElementPosition(ar, ar[getDatee.getMonth()]);
+                    if (monthe != mon) {
+                        n = ar[monthe];
+                        n += " " + yeare;
+                        newYea = yeare;
+                        days = daysInMonth(monthe, yeare);
+                        startDate = new Date(ar[monthe] + " 1" + "," + parseInt(yeare));
+                    }
+                    else {
+                        n = ar[getDatee.getMonth()];
+                        n += " " + yeare;
+                        newYea = yeare;
+                        days = daysInMonth(mon, yeare);
+                        startDate = new Date(ar[mon] + " 1" + "," + parseInt(yeare));
+                    }
+                }
+                var startDay = startDate.getDay();
+                var startDay1 = startDay;
+                while (startDay > 0) {
+                    calendar += "<td class='scope'></td>";
+                    startDay--;
+                }
+                i = 1;
+                while (i <= days) {
+                    if (startDay1 > 6) {
+                        startDay1 = 0;
+                        calendar += "</tr><tr>";
+                    }
+                    mon = monthe + 1;
+                    setvale = i + "," + n;
+                    showday = "";
+                    showmonth = "";
+                    if (i < 10) showday = '0' + i; else showday = i;
+                    if (mon < 10) showmonth = '0' + mon; else showmonth = mon;
+                    if (i == day && newYea == cyear && mon == cmonth + 1) {
+                        calendar += "<td class='thisday scope' onclick='setVal(\"" + showmonth + "/" + showday + "/" + newYea + "\")'><a>" + i + "</a></td>";
+                    } else {
+                        calendar += "<td class='thismon scope' onclick='setVal(\"" + showmonth + "/" + showday + "/" + newYea + "\")'><a>" + i + "</a></td>";
+                    }
+                    startDay1++;
+                    i++;
+                }
+                calendar += "<td class='scope'></td>";
+                $('#calendarpicker').css('display', 'block');
+                $('#month').html(n);
+                var test = "<tr class='weekdays'><td class='scope week'>Su</td><td class='scope week'>Mo</td><td class='scope week'>Tu</td><td class='scope week'>We</td><td class='scope week'>Th</td><td class='scope week'>Fr</td><td class='scope week'>Sa</td></tr>";
+                test += calendar;
+                $('#dispDays').html(test);
+                $(".thismon.scope").each(function () {
+                    $(this).bind("touchstart", function () {
+                        var func = $(this).attr("onclick");
+                        func = func.replace('setVal("', '');
+                        func = func.replace('")', '');
+                        setVal(func);
+                    });
+                });
+                $('.thisday.scope').bind("touchstart", function () {
+                    var func = $(this).attr("onclick");
+                    func = func.replace('setVal("', '');
+                    func = func.replace('")', '');
+                    setVal(func);
+                });
+            }
+            function dispCal2(mon, yea) {
+                if ($('#calendarpicker').css('display') == 'block')
+                    $('#calendarpicker').hide();
+                var ar = new Array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
+                var chkEmpty = isEmpty(mon);
+                var n, days, calendar, startDate, newYea, setvale, i;
+                if (chkEmpty != true) {
+                    mon = mon + 1;
+                    n = ar[mon - 1];
+                    n += " " + yea;
+                    newYea = yea;
+                    days = daysInMonth((mon - 1), yea);
+                    startDate = new Date(ar[mon - 1] + " 1" + "," + parseInt(yea));
+                } else {
+                    mon = getElementPosition(ar, ar[getDatee.getMonth()]);
+                    if (monthe2 != mon) {
+                        n = ar[monthe2];
+                        n += " " + yeare2;
+                        newYea = yeare2;
+                        days = daysInMonth(monthe2, yeare2);
+                        startDate = new Date(ar[monthe2] + " 1" + "," + parseInt(yeare2));
+                    }
+                    else {
+                        n = ar[getDatee.getMonth()];
+                        n += " " + yeare2;
+                        newYea = yeare2;
+                        days = daysInMonth(mon, yeare2);
+                        startDate = new Date(ar[mon] + " 1" + "," + parseInt(yeare2));
+                    }
+                }
+                var startDay = startDate.getDay();
+                var startDay1 = startDay;
+                while (startDay > 0) {
+                    calendar += "<td class='scope'></td>";
+                    startDay--;
+                }
+                i = 1;
+                while (i <= days) {
+                    if (startDay1 > 6) {
+                        startDay1 = 0;
+                        calendar += "</tr><tr>";
+                    }
+                    mon = monthe2 + 1;
+                    setvale = i + "," + n;
+                    showday = "";
+                    showmonth = "";
+                    if (i < 10) showday = '0' + i; else showday = i;
+                    if (mon < 10) showmonth = '0' + mon; else showmonth = mon;
+                    if (i == day2 && newYea == cyear && mon == cmonth+1) {
+                        calendar += "<td class='thisday scope' onclick='setVal2(\"" + showmonth + "/" + showday + "/" + newYea + "\")'><a>" + i + "</a></td>";
+                    } else {
+                        calendar += "<td class='thismon scope' onclick='setVal2(\"" + showmonth + "/" + showday + "/" + newYea + "\")'><a>" + i + "</a></td>";
+                    }
+                    startDay1++;
+                    i++;
+                }
+                calendar += "<td class='scope'></td>";
+                $('#calendarpicker2').css('display', 'block');
+                $('#month2').html(n);
+                var test = "<tr class='weekdays'><td class='scope week'>Su</td><td class='scope week'>Mo</td><td class='scope week'>Tu</td><td class='scope week'>We</td><td class='scope week'>Th</td><td class='scope week'>Fr</td><td class='scope week'>Sa</td></tr>";
+                test += calendar;
+                $('#dispDays2').html(test);
+                $(".thismon.scope").each(function () {
+                    $(this).bind("touchstart", function () {
+                        var func = $(this).attr("onclick");
+                        func = func.replace('setVal2("', '');
+                        func = func.replace('")', '');
+                        setVal2(func);
+                    });
+                });
+                $('.thisday.scope').bind("touchstart", function () {
+                    var func = $(this).attr("onclick");
+                    func = func.replace('setVal2("', '');
+                    func = func.replace('")', '');
+                    setVal2(func);
+                });
+            }
+            var categoryid = [];
+            $.ajax({
+                url: "../x7/json/",
+                type: 'POST',
+                async: false,
+                data: '{"id":1234543' + ',"dataContext":"json","jsonrpc":"2.0","method":"getAllCategoryIds","params":[10]}',
+                success: function (response, msg, xhr) {
+                    if (!("error" in response))
+                    categoryid = response['result'];
+                }
+            });
+            var jcategoryid = JSON.stringify(categoryid);
+            var categoryinfo = [];
+            $.ajax({
+                url: "../x7/json/",
+                type: 'POST',
+                async: false,
+                data: "{'id':1234543" + ",'dataContext':'json','jsonrpc':'2.0','method':'getCategoryObjects','params':[" + jcategoryid + "]}",
+                success: function (response, msg, xhruserinfo) {
+                    if (!("error" in response))
+                        categoryinfo = response['result'];
+                }
+            });
+            var auser;
+            $.ajax({
+                url: "../x7/json/",
+                type: 'POST',
+                async: false,
+                data: '{"id":1234543' + ',"dataContext":"json","jsonrpc":"2.0","method":"getAllUserIdsSortByField","params":["user_id",true]}',
+                success: function (response, msg, xhr) {
+                    auser = response['result'];
+                }
+            });
+            var uidj = JSON.stringify(auser);
+            var userinfo;
+            var userinfoarray = new Array();
+            $.ajax({
+                url: "../x7/json/",
+                type: 'POST',
+                async: false,
+                data: "{'id':'12345678','method':'getUserObjects','params':[" + uidj + "],'dataContext':'json','jsonrpc':'2.0'}",
+                success: function (response) {
+                    userinfo = response['result'];
+                    if (userinfo != null)
+                    {
+                        for (var x = 0; x < userinfo.length; x++) {
+                            var index = userinfo[x]["login"];
+                            var username = userinfo[x]["name1"] + " " + userinfo[x]["name3"];
+                            userinfoarray[index] = [userinfo[x]["userId"], userinfo[x]["email"], username];
+                            userinfoarray[index]["history"] = [];
+                        }
+                    }
+                }
+            });
+            var categoryinfoarray = new Array();
+            for (var cateinfo = 0; cateinfo < categoryinfo.length; cateinfo++)
+                categoryinfoarray[categoryinfo[cateinfo]['categoryid']] = categoryinfo[cateinfo]['name'];
+
+        </script>
+	</head>
+	<!-- PRODUCTION -->
+	<body class="">
+		<div id="wrapper" data-layer class="hide">
+			<div id="header" class=""></div>
+			<div id="content" class="">
+				<div id="category-tree" class="scrollable" style="display:none"></div>
+				<div id="gallery" class="wide">
+					<h2>Cat Man Playbook Reports</h2><span id="nametext" style="float:right;margin-top:-40px;margin-right:20px"></span>
+                    <div id="header-search-widget" class="search control-group pull-left" style="display:none"></div>
+                    <div id="dashboard" data-layer class="hide"></div>
+                    <div id="category" data-layer class="grid drop upload">
+                        <div id="tack" class="scrollable" style="display:none"></div>
+                        <div id="search-saved" data-layer class="grid hide no_recurse"></div>
+                        <div id="cart-saved" data-layer class="grid hide no_recurse"></div>
+                        <div id="category-header" class="hide"></div>
+                        <div id="category-list" class="hide"></div>
+                        <div id="category-assets" class="hide"></div>
+                    </div>
+                    <div id="asset-details" data-layer class="hide"></div>
+                    <div id="user-prefs" data-layer class="scrollable abs hide"></div>
+                    <div id="cart-assets" data-layer class="scrollable abs grid hide no_recurse"></div>
+                    <div id="saved-cart-assets" data-layer class="scrollable abs grid hide no_recurse"></div>
+                    <div id="asset-details" data-layer class="scrollable abs hide"></div>
+                    <div id="asset-repurpose" data-layer class="scrollable abs hide"></div>
+                    <div id="user-prefs" data-layer class="hide"></div>
+                    <div id="user-profile" data-layer class="scrollable abs hide"></div>
+                    <div id="share" data-layer class="scrollable abs hide"></div>
+                    <div id="public-link" data-layer class="scrollable abs hide"></div>
+                    <div id="data-set" data-layer class="scrollable abs hide"></div>
+                    <div id="docview" data-layer class="hide"></div>
+                    <div id="library-search-holder" class="hide page" data-layer>
+                        Enter text below to search the library :
+                        <div id="page-search-library" class="hide page" data-type="autoTemplate" data-route="search-library"></div>
+                        <div class="container not-fluid assets-holder">
+                            <div class="row nomargins-top">
+                                <div id="search-advanced" class=""></div>
+                                <div id="search-assets" class="grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="upload" data-layer class="hide"></div>
+                    <br/>
+                    <input type='hidden' id='current_page' />
+                    <input type='hidden' id='show_per_page' />
+                    <div id="report">
+                        <br><div style="margin-bottom:15px;"><div style="float: left; margin-right: 60px; margin-left: 50px;"><select id="ddluser" class="selectoption" name="ddluser" size="6"><option value="0">Select User</option><option value="all" selected>ALL</option></select></div>
+                            <div style="float: left; margin-right: 60px; "><select id="ddlcategory" name="ddlcategory" class="selectoption" size="6"><option value="0">Select Category</option><option value="all" selected>ALL</option></select></div>
+                        <div><select class="selectoption" id="ddldoctype" name="ddldoctype" size="6">
+                            <option value="0">Select Doc Type</option>
+                            <option value="all" selected>ALL</option>
+                            <option value="Category Review">Category Review</option>
+                            <option value="Category Growth Drivers">Category Growth Drivers</option>
+                            <option value="Category Dynamics">Category Dynamics</option>
+                            <option value="Category Decision Tree">Category Decision Tree</option>
+                            <option value="Category Segmentation">Category Segmentation</option>
+                            <option value="Category Trends">Category Trends</option>
+                            <option value="Perfect Score">Perfect Score</option>
+                            <option value="Innovation Selling Deck">Innovation Selling Deck</option>
+                            <option value="Trip Study">Trip Study</option>
+                            <option value="CMI Insights/Category Demographics">CMI Insights/Category Demographics</option>
+                            <option value="Nielsen">Nielsen</option>
+                            <option value="Best Practices">Best Practices</option>
+                            <option value="Category SKU Line Up">Category SKU Line Up</option>
+                            <option value="Category Shelving Guidelines">Category Shelving Guidelines</option>
+                        </select></div></div><br><br>
+                        <div style="padding-bottom: 25px; margin-top: 0px;">
+                            <div style="float: left; margin:0 60px 0 52px">
+                                <span style="color: #666;padding-right:10px;font-size:15px">Start Date</span><input type="text" id="startdate" title="Select Start Date" class="scope" style="width:120px;margin-bottom:0px;cursor:pointer" readonly="readonly" onclick="dispCal()">
+                                <img id="calimg" class="scope" onclick="dispCal()" title="Select Start Date" src="img/datepicker.jpg" style='cursor: pointer; vertical-align: middle; width: 20px' />
+                                <table class='calendarpicker scope' id='calendarpicker' border=0 cellpadding=0 cellspacing=0>
+                                    <tr class='monthdisp'>
+                                        <td class='navigate scope left' align='left' id="tdpreimg"><img id="preimg" class="scope" src="img/arrow-left.png" onclick="return prev()" /></td>
+                                        <td align='center' class="scope middle" id='month'></td>
+                                        <td class='navigate scope right' align='right' id="tdnextimg"><img id="nextimg" class="scope" src="img/arrow-right.png" onclick="return next()" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan=3 class='scope'>
+                                            <table id='dispDays' class="cal scope" border=0 cellpadding=4 cellspacing=4></table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div style="float: left; margin: 0 200px 0 18px; ">
+                                <span style="color: #666; padding-right: 10px; font-size: 15px; ">End Date </span><input type="text" id="enddate" title="Select End Date" class="scope" style="width: 120px; margin-bottom: 0px;; cursor: pointer" readonly="readonly" onclick="dispCal2()">
+                                <img id="calimg2" class="scope" onclick="dispCal2()" title="Select End Date" src="img/datepicker.jpg" style='cursor: pointer; vertical-align: middle;width:20px' />
+                                <table class='calendarpicker scope' id='calendarpicker2' border=0 cellpadding=0 cellspacing=0>
+                                    <tr class='monthdisp'>
+                                        <td class='navigate scope left' align='left' id="tdpreimg2"><img id="preimg2" class="scope" src="img/arrow-left.png" onclick="return prev2()" /></td>
+                                        <td align='center' class='scope middle' id='month2'></td>
+                                        <td class='navigate scope right' align='right' id="tdnextimg2"><img id="nextimg2" class="scope" src="img/arrow-right.png" onclick="return next2()" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan=3 class='scope'>
+                                            <table id='dispDays2' class="cal scope" border=0 cellpadding=4 cellspacing=4></table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div><div><a id="btreport" class="exportbutton" style="margin-bottom: 10px; margin-left: -58px;">Build Report</a></div>
+                        </div>
+                        <div id="activityhistory"><h3 style="margin-left:12px">Recent Activity:</h3><br><br></div><div id="page_navigation"></div>
+                    </div>
+                    <script type="text/javascript">
+                        var $inputUser = $("select[name='ddluser']")
+                        $(userinfo).each(function (i, v) {
+                            if (v['email'].indexOf('@cierant.com') == -1 && v['email'].indexOf('@apps.cierant.com') == -1 && v['email'].indexOf('@netx.com') == -1)
+                                $inputUser.append($("<option>", { value: v['userId'], html: v['name1'] + " " + v['name3'] }));
+                        });
+                        var $inputCategory = $("select[name='ddlcategory']")
+                        $(categoryinfo).each(function (i, v) {
+                            $inputCategory.append($("<option>", { value: v['categoryid'], html: v['name'] }));
+                        });
+                        document.getElementById("enddate").value = today;
+                        document.getElementById("startdate").value = pastmonthdate;
+                    </script>
+				</div>   
+			</div>
+			<div id="footer" class="">
+				<div class="copyright pull-left">&copy; Unilever 2014</div>
+				<div class="nav pull-right">
+					<ul>
+						<li><a class="home" href="http://www.m2splaybook.com/CatMan/#">Home</a></li>
+						<li><a class="search-library" href="http://www.m2splaybook.com/CatMan/#search-library">Search</a></li>
+						<li><a class="document-library" href="http://www.m2splaybook.com/CatMan/#document-library">Document Library</a></li>
+                        <li><a class="document-report" href="#activity">Report</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="overlay" data-layer class="hide"></div>
+		<div id="login" data-layer class="hide"></div>
+		<div id="loading" data-layer class="loading centering">
+			<div class="centered">
+				<h1>Loading Cat Man Playbook Reports... Please Wait ...</h1>
+				<div class="progress">
+					<div id="loading-progressbar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuemin="1" aria-valuemax="100" style="width: 1%">
+						<span class="sr-only">1%</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="zoom" data-layer class="hide" tabindex="0"></div>
+		<div id="alerts" class="hide"></div>
+		<div id="drop-zones">
+			<div class="drop download"></div>
+			<div id="category-upload-drop" class="drop upload"></div>
+		</div>
+	</body>
+</html>
+<script type="text/javascript">
+    function initBuild() {buildreport();}
+    $("#startdate").bind("touchstart", function () {
+        dispCal();
+    });
+    $("#calimg").bind("touchstart", function () {
+        dispCal();
+    });
+    $("#nextimg").bind("touchstart", function () {
+        return next();
+    });
+    $("#preimg").bind("touchstart", function () {
+        return prev();
+    });
+    $("#tdnextimg").bind("touchstart", function () {
+        return next();
+    });
+    $("#tdpreimg").bind("touchstart", function () {
+        return prev();
+    });
+    $("#nextimg2").bind("touchstart", function () {
+        return next2();
+    });
+    $("#preimg2").bind("touchstart", function () {
+        return prev2();
+    });
+    $("#tdnextimg2").bind("touchstart", function () {
+        return next2();
+    });
+    $("#tdpreimg2").bind("touchstart", function () {
+        return prev2();
+    });
+    $("#enddate").bind("touchstart", function () {
+        dispCal2();
+    });
+    $("#calimg2").bind("touchstart", function () {
+        dispCal2();
+    });
+    $("#btreport").bind("touchstart", function () {
+        selectreport();
+    });
+    $('#btreport').click(function () {
+        selectreport();
+    });
+    $(".home").bind("touchstart", function () {document.location = "http://www.m2splaybook.com/CatMan/#";});
+    $(".search-library").bind("touchstart", function () {document.location = "http://www.m2splaybook.com/CatMan/#search-library";});
+    $(".document-library").bind("touchstart", function () { document.location = "http://www.m2splaybook.com/CatMan/#document-library"; });
+    $(".document-report").bind("touchstart", function () { document.location = "#activity"; });
+    function exportFileie() {
+        var IEwindow = window.open();
+        IEwindow.document.write('sep=,\r\n' + ieExport);
+        IEwindow.document.close();
+        IEwindow.document.execCommand('SaveAs', true, "downloadhistory" + ".csv");
+        IEwindow.close();
+    }
+    function msieversion() {
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))
+            return true;
+        else
+            return false;
+        return false;
+    }
+    function previouspage() {
+        new_page = parseInt($('#current_page').val()) - 1;
+        if ($('.active_page').prev('.page_link').length == true) {
+            go_to_page(new_page,0);
+        }
+    }
+    function nextpage() {
+        new_page = parseInt($('#current_page').val()) + 1;
+        if ($('.active_page').next('.page_link').length == true) {
+            go_to_page(new_page,0);
+        }
+    }
+    function go_to_page(page_num,ipad) {
+        var show_per_page = parseInt($('#show_per_page').val());
+        start_from = page_num * show_per_page + 1;
+        end_on = start_from + show_per_page;
+        $('#reporttable').children().children().attr("class", "hide").slice(start_from, end_on).attr('class', '');
+        $('#trheader').attr("class", "");
+        $('.page_link[longdesc=' + page_num + ']').addClass('active_page').siblings('.active_page').removeClass('active_page');
+        $('#current_page').val(page_num);
+        if (ipad==1)
+            $('#reporttable').children().children().slice(start_from, start_from + 1).attr("style","background-color:white");
+    }
+    var filehistory = [];
+    function buildreport() {
+        var startdate = document.getElementById("startdate").value;
+        var enddate = document.getElementById("enddate").value;
+        var selectuser = document.getElementById("ddluser").value;
+        var selectcategory = document.getElementById("ddlcategory").value;
+        var selectdoctype = document.getElementById("ddldoctype").value;
+        if (selectuser == "0" || selectcategory == "0" || selectdoctype == "0")
+            alert("Please select a user, category or doc type");
+        else {
+            var history = new Array();
+            var download = new Array();
+            var filename = "";
+            var file_type = "";
+            var downloaddate = "";
+            var lastlogindate = "";
+            var lastlogindateAll = [];
+            var assetid = [];
+            var lastlogindatealldata = {};
+            var assetidsAll = [];
+            var objHistory = {
+                getUserlogin: function (user_id) {
+                    $.ajax({
+                        url: "../x7/json/",
+                        type: 'POST',
+                        async: false,
+                        data: '{"id":"123456"' + ',"dataContext":"json","jsonrpc":"2.0","method":"getLastLoginObjects","params":[' + user_id + ']}',
+                        success: function (response, msg, xhr) {
+                            if (response!=null)
+                                lastlogindateAll = response['result'];
+                        }
+                    });
+                },
+                getAssets: function (selectcategory) {
+                    $.ajax({
+                        url: "../x7/json/",
+                        type: 'POST',
+                        async: false,
+                        data: '{"id":1234543' + ',"dataContext":"json","jsonrpc":"2.0","method":"getAssetsForCategory","params":[' + selectcategory + ',"name",0]}',
+                        success: function (response, msg, xhr) {
+                                assetidsAll[selectcategory] = response['result'];
+                        }
+                    });
+                },
+                getHistory: function (assetid, selectcategory) {
+                    var deferHistory = $.Deferred(),
+                      filtered = deferHistory.then(function (aid) {
+                          var deliveryhistory = [];
+                          var delivery = 0;
+                          var u = "";
+                          var logid = 1;
+                          var userid = "";
+                          $.ajax({
+                              url: "../x7/json/",
+                              type: 'POST',
+                              async: false,
+                              data: '{"id":1234543' + ',"dataContext":"json","jsonrpc":"2.0","method":"getAssetStatData","params":[' + aid + ']}',
+                              success: function (response, msg, xhr) {
+                                  var historyresult = response['result'];
+                                  var l = 0;
+                                  if (historyresult != null) {
+                                      l = response['result'].length;
+                                      for (var h = 0; h < l; h++) {
+                                          logid = aid.toString() + h.toString();
+                                          if (response['result'][h]["item"] == "Preview") {
+                                              u = response['result'][h]["user"];
+                                              userid = userinfoarray[u][0];
+                                              delivery = aid;
+                                              historyresult[h]["lastlogin"] = lastlogindatealldata[userid];
+                                              historyresult[h]["userid"] = userid;
+                                              historyresult[h]["username"] = userinfoarray[u][2];
+                                              historyresult[h]["email"] = userinfoarray[u][1];
+                                              historyresult[h]["action"] = "Preview";
+                                              deliveryhistory.push(historyresult[h]);
+                                              userinfoarray[u][3] = lastlogindatealldata[userid];
+                                          }
+                                          else if (response['result'][h]["item"] == "Delivery") {
+                                              checkdelivery = 1;
+                                              u = response['result'][h]["user"];
+                                              userid = userinfoarray[u][0];
+                                              delivery = aid;
+                                              historyresult[h]["lastlogin"] = lastlogindatealldata[userid];
+                                              historyresult[h]["userid"] = userid;
+                                              historyresult[h]["username"] = userinfoarray[u][2];
+                                              historyresult[h]["email"] = userinfoarray[u][1];
+                                              historyresult[h]["action"] = "Download";
+                                              deliveryhistory.push(historyresult[h]);
+                                              userinfoarray[u][3] = lastlogindatealldata[userid];
+                                          }
+                                      }
+                                  }
+                              }
+                          });
+                          return [delivery, deliveryhistory, selectcategory, u, logid];
+                      });
+                    deferHistory.resolve(assetid);
+                    filtered.done(function (deliveryvalue) {
+                        var asset = deliveryvalue[0];
+                        var delivery = deliveryvalue[1];
+                        var cateid = deliveryvalue[2];
+                        var userlogin = deliveryvalue[3];
+                        var id = deliveryvalue[4];
+                        if (asset != 0) {
+                            $.ajax({
+                                url: "../x7/json/",
+                                type: 'POST',
+                                async: false,
+                                data: '{"id":"'+id + '","dataContext":"json","jsonrpc":"2.0","method":"getAssetBean","params":[' + asset + ']}',
+                                success: function (assetfile, msg, xhr) {
+                                    filename = assetfile['result']['file'];
+                                    file_type = "";
+                                    delivery['file'] = filename;
+                                    if (filename.indexOf("CAT_REV") != -1)
+                                        file_type = "Category Review";
+                                    else if (filename.indexOf("CAT_GRTH") != -1)
+                                        file_type = "Category Growth Drivers";
+                                    else if (filename.indexOf("CAT_DYN") != -1)
+                                        file_type = "Category Dynamics";
+                                    else if (filename.indexOf("CAT_DECTR") != -1)
+                                        file_type = "Category Decision Tree";
+                                    else if (filename.indexOf("CAT_SEG") != -1)
+                                        file_type = "Category Segmentation";
+                                    else if (filename.indexOf("CAT_TRND") != -1)
+                                        file_type = "Category Trends";
+                                    else if (filename.indexOf("PER_SCR") != -1)
+                                        file_type = "Perfect Score";
+                                    else if (filename.indexOf("INV_SL_DK") != -1)
+                                        file_type = "Innovation Selling Dec";
+                                    else if (filename.indexOf("TRP_STDY") != -1)
+                                        file_type = "Trip Study";
+                                    else if (filename.indexOf("CM_INS") != -1)
+                                        file_type = "CMI Insights/Category Demographics";
+                                    else if (filename.indexOf("NLS") != -1)
+                                        file_type = "Nielsen";
+                                    else if (filename.indexOf("BSTRC") != -1)
+                                        file_type = "Best Practices";
+                                    else if (filename.indexOf("CAT_SKLU") != -1)
+                                        file_type = "Category SKU Line Up";
+                                    else if (filename.indexOf("CAT_SHGL") != -1)
+                                        file_type = "Category Shelving Guidelines";
+                                    delivery['filetype'] = file_type;
+                                    delivery['assetid'] = asset;
+                                    delivery['categoryid'] = cateid;
+                                    delivery['category'] = categoryinfoarray[cateid];
+                                    filehistory.push(delivery);
+                                }
+                            });
+                        }
+                    });
+                }
+            };
+            deferUser = $.Deferred();
+            deferUser.promise(objHistory);
+            deferUser.resolve(uidj);
+            var reu = objHistory.done(function (uid) {
+                objHistory.getUserlogin(uid);
+            });
+            if (lastlogindateAll != null)
+            {
+                for (var ldd = 0; ldd < lastlogindateAll.length; ldd++) {
+                    var loginallid = lastlogindateAll[ldd]["userid"].toString();
+                    lastlogindatealldata[loginallid] = lastlogindateAll[ldd]["logindate"];
+                }
+            }
+            for (var c = 0; c < categoryid.length; c++) {
+                deferAsset = $.Deferred();
+                deferAsset.promise(objHistory);
+                deferAsset.resolve(categoryid[c]);
+                var re = objHistory.done(function (category) {
+                    objHistory.getAssets(category);
+                });
+            }
+            var assetlength = assetidsAll.length;
+            var cai = 0;
+            for (var cate_index in assetidsAll) {
+                if (assetidsAll.hasOwnProperty(cate_index)) {
+                    for (var assetindex = 0; assetindex < assetidsAll[cate_index].length; assetindex++) {
+                        re.getHistory(assetidsAll[cate_index][assetindex], cate_index);
+                    }
+                    cai++;
+                }
+            }
+            ouputreport(filehistory, startdate, enddate, selectdoctype);
+        }
+    }
+    function selectreport()
+    {
+        var filehistoryselect = [];
+        var startdate = document.getElementById("startdate").value;
+        var enddate = document.getElementById("enddate").value;
+        var selectuser = document.getElementById("ddluser").value;
+        var selectcategory = document.getElementById("ddlcategory").value;
+        var selectdoctype = document.getElementById("ddldoctype").value;
+        var record = 0;
+        if (selectuser == "0" || selectcategory == "0" || selectdoctype == "0")
+            alert("Please select a user, category or doc type");
+        else
+        {
+            var l = filehistory.length;
+            if (selectcategory == "all") {
+                if (selectuser == "all")
+                    ouputreport(filehistory, startdate, enddate, selectdoctype);
+                else {
+                    var n = 0;
+                    for (var i = 0; i < l; i++) {
+                        var userdownload = [];
+                        var hasrecord = 0;
+                        for (var j = 0; j < filehistory[i].length; j++) {
+                            if (filehistory[i][j]['userid'] == selectuser) {
+                                hasrecord = 1;
+                                record++;
+                                userdownload.push(filehistory[i][j]);
+                            }
+                        }
+                        if (hasrecord == 1) {
+                            filehistoryselect[n] = [];
+                            filehistoryselect[n] = userdownload;
+                            filehistoryselect[n]['category'] = filehistory[i]['category'];
+                            filehistoryselect[n]['categoryid'] = filehistory[i]['categoryid'];
+                            filehistoryselect[n]['file'] = filehistory[i]['file'];
+                            filehistoryselect[n]['filetype'] = filehistory[i]['filetype'];
+                            n = n + 1;
+                        }
+                    }
+                    ouputreport(filehistoryselect, startdate, enddate, selectdoctype);
+                }
+            }
+            else {
+                if (selectuser == "all") {
+                    var n = 0;
+                    for (var i = 0; i < l; i++) {
+                        if (selectcategory == filehistory[i]['categoryid']) {
+                            var userdownload = [];
+                            var hasrecord = 0;
+                            for (var j = 0; j < filehistory[i].length; j++) {
+                                hasrecord = 1;
+                                record++;
+                                userdownload.push(filehistory[i][j]);
+                            }
+                            if (hasrecord == 1) {
+                                filehistoryselect[n] = [];
+                                filehistoryselect[n] = userdownload;
+                                filehistoryselect[n]['category'] = filehistory[i]['category'];
+                                filehistoryselect[n]['categoryid'] = filehistory[i]['categoryid'];
+                                filehistoryselect[n]['file'] = filehistory[i]['file'];
+                                filehistoryselect[n]['filetype'] = filehistory[i]['filetype'];
+                                n = n + 1;
+                            }
+                        }
+                    }
+                }
+                else {
+                    var n = 0;
+                    for (var i = 0; i < l; i++) {
+                        if (selectcategory == filehistory[i]['categoryid']) {
+                            var userdownload = [];
+                            var hasrecord = 0;
+                            for (var j = 0; j < filehistory[i].length; j++) {
+                                if (filehistory[i][j]['userid'] == selectuser) {
+                                    record++;
+                                    hasrecord = 1;
+                                    userdownload.push(filehistory[i][j]);
+                                }
+                            }
+                            if (hasrecord == 1) {
+                                filehistoryselect[n] = [];
+                                filehistoryselect[n] = userdownload;
+                                filehistoryselect[n]['category'] = filehistory[i]['category'];
+                                filehistoryselect[n]['categoryid'] = filehistory[i]['categoryid'];
+                                filehistoryselect[n]['file'] = filehistory[i]['file'];
+                                filehistoryselect[n]['filetype'] = filehistory[i]['filetype'];
+                                n = n + 1;
+                            }
+                        }
+                    }
+                }
+                ouputreport(filehistoryselect, startdate, enddate, selectdoctype);
+            }
+        }
+    }
+    var ieExport = "";
+    var pageitem = 12;
+    $('#show_per_page').val(pageitem);
+    function ouputreport(sfilehistory, startdate, enddate, selectdoctype) {
+        var newdata = [];
+        var tableheader = "<div id='divreport'><table style='width: 1006px;border: 1px solid #525252;font-size:10pt;margin: 0 12px;' id='reporttable' class='tbreport'><tr id='trheader'><th>Name</th><th>Email</th><th class='lblogin'>Last Login Date</th><th class='lbcategory'>Category</th><th class='lbtype'>Document Type</th><th>File</th><th class='lbaction'>Action</th><th class='datetab'>Date/Time</th></tr>";
+        var tablecontent = "";
+        var content = [];
+        content.push(['Name', 'Email', 'Last Login Date', 'Category', 'Document Type', 'File', 'Action', 'Date/Time']);
+        var rowcontent = [];
+        var filename = "";
+        var filetype = "";
+        var restul = 0;
+        var record = 0;
+        var selectuser = document.getElementById("ddluser").value;
+        var selectcategory = document.getElementById("ddlcategory").value;
+        var selectdoctype = document.getElementById("ddldoctype").value;
+        for (var f = 0; f < sfilehistory.length; f++) {
+            var downloadtime = sfilehistory[f].length;
+            for (var t = 0; t < downloadtime; t++) {
+                var useremail = sfilehistory[f][t]["email"];
+                if (useremail.indexOf("@cierant.com") == -1 && useremail.indexOf("@apps.cierant.com") == -1 && useremail.indexOf("@netx.com") == -1) {
+                    var formatelogindate = sfilehistory[f][t]["lastlogin"].replace(")", "");
+                    formatelogindate = formatelogindate.replace("(", "");
+                    var locallogindate = new Date(formatelogindate + " UTC");
+                    var displaylogindate = new moment(locallogindate).format('MMM DD,YY h:mm A');
+                    var formatdownloaddate = sfilehistory[f][t]["date"].replace(")", "");
+                    formatdownloaddate = formatdownloaddate.replace("(", "");
+                    var localdownloaddate = new Date(formatdownloaddate + " UTC");
+                    var displaydownloaddate = new moment(localdownloaddate).format('MMM DD,YY h:mm A');
+                    var cdownloaddate = new moment(localdownloaddate).format('YYYY/MM/DD HH:mm:ss');//has to be / for ie
+                    var date = new Date(formatdownloaddate);
+                    var year = date.getFullYear();
+                    var month = parseInt(date.getMonth()) + 1;
+                    var day = date.getDate();
+                    var datestring = (month.toString().length > 1 ? month : "0" + month) + '/' + (day.toString().length > 1 ? day : "0" + day) + '/' + year;
+                    var cstartdate = "";
+                    var s = 0;
+                    var n = 0;
+                    if (startdate != "") {
+                        cstartdate = new Date(startdate);
+                        s = date - cstartdate;
+                    }
+                    var cenddate = "";
+                    if (enddate != "") {
+                        cenddate = new Date(enddate);
+                        cenddate = moment(cenddate).add('days', 1);
+                        n = cenddate - date;
+                    }
+                    if (startdate != "" && enddate != "" && s >= 0 && n > 0 || startdate != "" && enddate == "" && s >= 0 || startdate == "" && enddate != "" && n > 0 || startdate == "" && enddate == "") {
+                        filetype = sfilehistory[f]['filetype'];
+                        if (selectdoctype == "all" || selectdoctype == filetype) {
+                            var adata = { name: sfilehistory[f][t]["username"], email: sfilehistory[f][t]["email"], logindate: displaylogindate, category: sfilehistory[f]["category"], type: filetype, file: sfilehistory[f]['file'], action: sfilehistory[f][t]["action"], downloaddate: displaydownloaddate, date: cdownloaddate };
+                            newdata.push(adata);
+                            record++;
+                            restul = 1;
+                        }
+                    }
+                }
+            }
+        }
+        var newclassname = "";
+        var firstclass = "";
+        if (restul == 1) {
+            newdata.sort(function (a, b) { return new Date(b.date) - new Date(a.date) });
+            for (var n = 0; n < newdata.length;n++)
+            {
+                if (n % pageitem == 0)
+                    firstclass = "firsttr";
+                else
+                    firstclass = "";
+                if (n+1 > pageitem)
+                    newclassname = "hide";
+                else
+                    newclassname = "";
+                if (n < 50)
+                    tablecontent = tablecontent + "<tr class='" + newclassname + "'><td class='" + firstclass + "'>" + newdata[n]["name"] + "</td><td class='" + firstclass + "'>" + newdata[n]["email"] + "</td><td class='" + firstclass + "'>" + newdata[n]["logindate"] + "</td><td class='" + firstclass + "'>" + newdata[n]["category"] + "</td><td class='" + firstclass + "'>" + newdata[n]["type"] + "</td><td class='" + firstclass + "'>" + newdata[n]['file'] + "</td><td class='" + firstclass + "'>" + newdata[n]['action'] + "</td><td class='" + firstclass + "'>" + newdata[n]['downloaddate'] + "</td></tr>";
+                var row = [newdata[n]["name"], newdata[n]["email"], newdata[n]["logindate"], newdata[n]["category"], newdata[n]["type"], newdata[n]['file'], newdata[n]['action'], newdata[n]['downloaddate']];
+                content.push(row);
+            }
+            $('#current_page').val(0);
+            if (record>50)
+                record = 50;
+            var number_of_pages = Math.ceil(record / pageitem);
+            var navigation_html = '<a class="previous_link" onclick="previouspage();">Prev</a>';
+            var current_link = 0;
+            while (number_of_pages > current_link) {
+                if (current_link == 0)
+                    navigation_html += '<a class="page_link active_page" onclick="go_to_page(' + current_link + ',0)" longdesc="' + current_link + '">' + (current_link + 1) + '</a>';
+                else
+                    navigation_html += '<a class="page_link" onclick="go_to_page(' + current_link + ',0)" longdesc="' + current_link + '">' + (current_link + 1) + '</a>';
+                current_link++;
+            }
+            navigation_html += '<a class="next_link" onclick="nextpage();">Next</a>';
+            var finalVal = '';
+            for (var i = 0; i < content.length; i++) {
+                var value = content[i];
+                for (var j = 0; j < value.length; j++) {
+                    var innerValue = value[j];
+                    var result = innerValue.replace(/"/g, '""');
+                    if (result.search(/("|,|\n)/g) >= 0)
+                        result = '"' + result + '"';
+                    if (j > 0)
+                        finalVal += ',';
+                    finalVal += result;
+                }
+                finalVal += '\n';
+            }
+            ieExport = finalVal;
+            var hrefcontent = "data:text/csv;charset=utf-8," + encodeURIComponent(finalVal);
+            if (msieversion())
+                tablecontent = "<h3 style='margin-left:12px'>Recent Activity:</h3><div style='margin-top:-22px;margin-bottom: 15px;'><a class='abutton' id='export' onclick='exportFileie()' style='float:right;margin-right:50px'>Export</a></div><br><br><br>" + tableheader + tablecontent + "</table></div>";
+            else
+                tablecontent = "<h3 style='margin-left:12px'>Recent Activity:</h3><div style='margin-top:-22px;margin-bottom: 15px;'><a class='abutton' id='export' href='" + hrefcontent + "' download='downloadhistory.csv' style='float:right;margin-right:50px;margin-top: -5px;'>Export</a></div><br><br><br>" + tableheader + tablecontent + "</table><br>";
+            document.getElementById("activityhistory").innerHTML = tablecontent;
+            if (number_of_pages > 1) {
+                $('#page_navigation').html(navigation_html);
+                document.getElementById("page_navigation").setAttribute("class", "");
+                document.getElementById("divreport").setAttribute("class", "limit");
+                $(".previous_link").bind("touchstart", function () { previouspage(); });
+                $(".next_link").bind("touchstart", function () { nextpage(); });
+                $(".page_link").each(function () {
+                    $(this).bind("touchstart", function () {
+                        var func = $(this).attr("onclick");
+                        func = func.replace('go_to_page(', '');
+                        func = func.replace(',0)', '');
+                        go_to_page(func,1);
+                    });
+                });
+            }
+            else {
+                document.getElementById("page_navigation").setAttribute("class", "hide");
+                if (document.getElementById("divreport"))
+                    document.getElementById("divreport").setAttribute("class", "");
+            }
+        }
+        else
+        {
+            document.getElementById("activityhistory").innerHTML = "<h3 style='margin-left:12px'>Recent Activity:</h3><br><span style='margin-left:12px'>There is no history records.</span>";
+            document.getElementById("page_navigation").setAttribute("class", "hide");
+            if (document.getElementById("divreport"))
+            document.getElementById("divreport").setAttribute("class", "");
+        }
+    }
+    initBuild();
+</script>
+
+
+
